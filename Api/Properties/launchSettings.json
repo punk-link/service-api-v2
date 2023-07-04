@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "https": {
+      "applicationUrl": "http://localhost:8080;https://localhost:8081",
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Local"
+      },
+      "launchBrowser": false,
+      "launchUrl": "swagger"
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
+}
