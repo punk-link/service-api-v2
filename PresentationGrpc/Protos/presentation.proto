@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+option csharp_namespace = "PresentationGrpc.Services";
+
+service Presentation {
+    rpc CheckHealth(HealthCheckRequest) returns (HealthCheckResponse) {}
+    rpc GetArtist (ArtistRequest) returns (Artist) {}
+    rpc GetRelease (ReleaseRequest) returns (Release) {}
+}
+
+message Artist {
+    int32 Id = 1;
+    string Name = 2;
+    PresentationConfig PresentationConfig = 3;
+    repeated SlimRelease Releases = 4;
+    ReleaseStats ReleaseStats = 5;
+    repeated ArtistSocialNetwork SocialNetworks = 6;
+}
+
+message ArtistRequest {
+    int32 Id = 1;
+}
+
+message ArtistSocialNetwork {
+    string Id = 1;
+    string Url = 2;
+}
+
+message HealthCheckResponse {
+}
+
+message HealthCheckRequest {
+}
+
+message ImageDetails {
+    string AltText = 1;
+    int32 Height = 2;
+    string Url = 3;
+    int32 Width = 4;
+}
+
+message PlatformUrl {
+    string PlatformId = 1;
+    string Url = 2;
+}
+
+message PresentationConfig {
+    repeated string ShareableSocialNetworkIds = 1;
+}
+
+message Release {
+	int32 Id = 1;
+    string Description = 2;
+    ImageDetails ImageDetails = 3;
+    string Label = 4;
+    string Name = 5;
+    repeated PlatformUrl PlatformUrls = 6;
+    PresentationConfig PresentationConfig = 7;
+    repeated SlimArtist ReleaseArtists = 8;
+    ReleaseStats ReleaseStats = 9;
+    google.protobuf.Timestamp ReleaseDate = 10;
+    repeated string Tags = 11;
+    repeated Track Tracks = 12;
+    string Type = 13;
+}
+
+message ReleaseRequest {
+    int32 Id = 1;
+}
+
+message ReleaseStats {
+    int32 AlbumNumber = 1;
+    int32 CompilationNumber = 2;
+    int32 SingleNumber = 3;
+}
+
+message SlimArtist {
+    int32 Id = 1;
+    string Name = 2;
+}
+
+message SlimRelease {
+    int32 Id = 1;
+    ImageDetails ImageDetails = 2;
+    string Name = 3;
+    google.protobuf.Timestamp ReleaseDate = 4;
+    string Type = 5;
+}
+
+message Track {
+    repeated SlimArtist Artists = 1;
+    int32 DiscNumber = 2;
+    bool IsExplicit = 3;
+    string Name = 4;
+    int32 TrackNumber = 5;
+}
