@@ -11,6 +11,20 @@ public class Context : DbContext
     { }
 
 
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Release>()
+            .HasMany(x => x.ReleaseArtists)
+            .WithMany(x => x.Releases);
+
+        modelBuilder.Entity<Release>()
+            .HasMany(x => x.FeaturingArtists)
+            .WithMany(x => x.Releases);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
+
     public DbSet<Artist> Artists { get; set; }
     public DbSet<PresentationConfig> PresentationConfigs { get; set; }
     public DbSet<Release> Releases { get; set; }
