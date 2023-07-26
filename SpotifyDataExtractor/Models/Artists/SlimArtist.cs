@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using SpotifyDataExtractor.Models.Common;
 
 namespace SpotifyDataExtractor.Models.Artists;
 
