@@ -21,6 +21,8 @@ builder.Services.AddSpotifyDataExtractor(options =>
     options.ClientSecret = secrets["spotify-client-secret"];
 });
 
+// TODO: https://learn.microsoft.com/en-us/ef/core/performance/efficient-updating?tabs=ef7
+
 builder.Services.AddApiVersioning();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
