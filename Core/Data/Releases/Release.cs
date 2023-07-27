@@ -14,7 +14,7 @@ public class Release
     public DateTime Created { get; set; }
     public string Description { get; set; } = default!;
     [Column(TypeName = "jsonb")]
-    public ImageDetails ImageDetails { get; set; } = default!;
+    public List<ImageDetails> ImageDetails { get; set; } = default!;
     public string Label { get; set; } = default!;
     public string Name { get; set; } = default!;
     public DateTime ReleaseDate { get; set; }
@@ -24,7 +24,6 @@ public class Release
     public DateTime Updated { get; set; }
 
 
-    public List<Artist> FeaturingArtists { get; set; } = default!;
     public List<Artist> ReleaseArtists { get; set; } = default!;
     public List<Track> Tracks { get; set; } = default!;
 }

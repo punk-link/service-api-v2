@@ -6,13 +6,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Core.Data.Artists;
 
 [Index(nameof(SpotifyId), IsUnique = true)]
+[Index(nameof(LabelId), IsUnique = true)]
 public class Artist : Metadata
 {
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
-    [Column("image_details", TypeName = "jsonb")]
-    public string ImageDetails { get; set; } = default!;
-    public int LabelId { get; set; } // `gorm:"uniqueIndex,not null"`
+    [Column(TypeName = "jsonb")]
+    public List<ImageDetails> ImageDetails { get; set; } = default!;
+    public int LabelId { get; set; }
     public string Name { get; set; } = default!;
     public string SpotifyId { get; set; } = default!;
 

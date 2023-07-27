@@ -17,10 +17,6 @@ public class Context : DbContext
             .HasMany(x => x.ReleaseArtists)
             .WithMany(x => x.Releases);
 
-        modelBuilder.Entity<Release>()
-            .HasMany(x => x.FeaturingArtists)
-            .WithMany(x => x.Releases);
-
         modelBuilder.Entity<Track>()
             .HasOne(x => x.Release)
             .WithMany(x => x.Tracks)

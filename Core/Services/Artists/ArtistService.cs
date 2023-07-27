@@ -8,6 +8,7 @@ using Core.Models.Labels;
 using Core.Models.Labels.Validations;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Artist = Core.Models.Artists.Artist;
@@ -16,8 +17,13 @@ namespace Core.Services.Artists;
 
 public sealed class ArtistService : IArtistService
 {
-    public ArtistService(Context context, SpotifyDataExtractor.IArtistService spotifyArtistService, SpotifyDataExtractor.IReleaseService spotifyReleaseService)
+    public ArtistService(Context context, 
+        ILoggerFactory loggerFactory,
+        SpotifyDataExtractor.IArtistService spotifyArtistService, 
+        SpotifyDataExtractor.IReleaseService spotifyReleaseService)
     {
+        _logger = loggerFactory.CreateLogger<ArtistService>();
+
         _context = context;
         _spotifyArtistService = spotifyArtistService;
         _spotifyReleaseService = spotifyReleaseService;
@@ -31,7 +37,7 @@ public sealed class ArtistService : IArtistService
         return await Result.Success()
             .Ensure(() => !string.IsNullOrWhiteSpace(spotifyId), "Artist's spotify ID is empty.")
             .Bind(GetExistingArtist)
-            .Bind(AddOrUpdate)
+            .Bind(AddOrUpdateArtist)
             .Bind(AddMissingReleases)
             .Bind(GetArtist);
 
@@ -41,7 +47,7 @@ public sealed class ArtistService : IArtistService
                 .FirstOrDefaultAsync(x => x.SpotifyId == spotifyId, cancellationToken);
 
 
-        async Task<Result<string>> AddOrUpdate(Data.Artists.Artist? dbArtist)
+        async Task<Result<string>> AddOrUpdateArtist(Data.Artists.Artist? dbArtist)
         {
             if (dbArtist is null)
                 return await AddArtist();
@@ -52,35 +58,35 @@ public sealed class ArtistService : IArtistService
                 return Result.Failure<string>(validationResult.ToCombinedMessage());
 
             return await UpdateArtist(dbArtist);
-        }
 
 
-        async Task<Result<string>> AddArtist()
-        {
-            // TODO: check for failures and replace the error message
-            var spotifyArtist = await _spotifyArtistService.Get(spotifyId, cancellationToken);
-            if (spotifyArtist == default)
-                return Result.Failure<string>("Failure");
+            async Task<Result<string>> AddArtist()
+            {
+                // TODO: check for failures and replace the error message
+                var spotifyArtist = await _spotifyArtistService.Get(spotifyId, cancellationToken);
+                if (spotifyArtist == default)
+                    return Result.Failure<string>("Failure");
 
-            var dbArtist = spotifyArtist.ToDbArtist(managerContext.LabelId, now);
-            await _context.Artists.AddAsync(dbArtist, cancellationToken);
+                var dbArtist = spotifyArtist.ToDbArtist(managerContext.LabelId, now);
+                await _context.Artists.AddAsync(dbArtist, cancellationToken);
 
-            await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-            return dbArtist.SpotifyId;
-        }
+                return dbArtist.SpotifyId;
+            }
 
 
-        async Task<Result<string>> UpdateArtist(Data.Artists.Artist dbArtist)
-        {
-            dbArtist.LabelId = managerContext.LabelId;
-            dbArtist.Updated = now;
+            async Task<Result<string>> UpdateArtist(Data.Artists.Artist dbArtist)
+            {
+                dbArtist.LabelId = managerContext.LabelId;
+                dbArtist.Updated = now;
 
-            _context.Update(dbArtist);
+                _context.Update(dbArtist);
 
-            await _context.SaveChangesAsync(cancellationToken);
+                await _context.SaveChangesAsync(cancellationToken);
 
-            return dbArtist.SpotifyId;
+                return dbArtist.SpotifyId;
+            }
         }
 
 
@@ -241,16 +247,22 @@ public sealed class ArtistService : IArtistService
                 var dbReleases = new ConcurrentBag<Data.Releases.Release>();
                 Parallel.ForEach(container.Releases, release =>
                 {
-                    var dbRelease = release.ToDbRelease();
-
                     var releaseArtists = new List<Data.Artists.Artist>(release.Artists.Count);
                     foreach (var artist in release.Artists)
                     {
+                        if (!featuringArtistDict.TryGetValue(artist.Id, out var artistId))
+                        {
+                            // TODO: add efficient logging
+                            _logger.LogWarning($"An artist with a Spotify ID '{artist.Id}' wasn't found.");
+                            continue;
+                        }
 
+                        releaseArtists.Add(new Data.Artists.Artist { Id = artistId });
                     }
-                    dbRelease.ReleaseArtists = releaseArtists;
 
-                    // TODO: add ImageDetails
+                    var dbRelease = release.ToDbRelease(releaseArtists, now);
+
+                    // TODO: add release date converter
                     // TODO: add tracks
 
                     dbReleases.Add(dbRelease);
@@ -286,6 +298,7 @@ public sealed class ArtistService : IArtistService
 
 
     private readonly Context _context;
+    private readonly ILogger<ArtistService> _logger;
     private readonly SpotifyDataExtractor.IArtistService _spotifyArtistService;
     private readonly SpotifyDataExtractor.IReleaseService _spotifyReleaseService;
 }
