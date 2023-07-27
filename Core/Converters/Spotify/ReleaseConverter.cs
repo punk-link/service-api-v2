@@ -4,9 +4,25 @@ namespace Core.Converters.Spotify;
 
 internal static class ReleaseConverter
 {
-    public static Release ToDbRelease(this SpotifyDataExtractor.Models.Releases.Release release)
+    public static Release ToDbRelease(this SpotifyDataExtractor.Models.Releases.Release release, in DateTime timeStamp)
     {
-        return new Release();
+        return new Release
+        {
+            Created = timeStamp,
+            Description = string.Empty,
+            FeaturingArtists = new List<Data.Artists.Artist>(),
+            Id = 0,
+            ImageDetails = "",
+            Label = release.Label,
+            Name = release.Name,
+            ReleaseArtists = new List<Data.Artists.Artist>(),
+            ReleaseDate = timeStamp, //release.ReleaseDate,
+            SpotifyId = release.Id,
+            TrackNumber = release.TrackNumber,
+            Tracks = "",
+            Upc = release.ExternalIds.Upc,
+            Updated = timeStamp
+        };
     }
 
 

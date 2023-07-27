@@ -21,6 +21,12 @@ public class Context : DbContext
             .HasMany(x => x.FeaturingArtists)
             .WithMany(x => x.Releases);
 
+        modelBuilder.Entity<Track>()
+            .HasOne(x => x.Release)
+            .WithMany(x => x.Tracks)
+            .HasForeignKey(x => x.ReleaseId)
+            .IsRequired();
+
         base.OnModelCreating(modelBuilder);
     }
 
