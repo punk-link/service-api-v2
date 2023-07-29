@@ -1,8 +1,8 @@
 ﻿using Core.Converters.Artists;
 using Core.Converters.Spotify;
 using Core.Data;
-using Core.Data.Artists;
 using Core.Extensions;
+using Core.Logging;
 using Core.Models.Artists;
 using Core.Models.Labels;
 using Core.Models.Labels.Validations;
@@ -10,7 +10,6 @@ using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Artist = Core.Models.Artists.Artist;
 
 namespace Core.Services.Artists;
@@ -252,8 +251,7 @@ public sealed class ArtistService : IArtistService
                     {
                         if (!featuringArtistDict.TryGetValue(artist.Id, out var artistId))
                         {
-                            // TODO: add efficient logging
-                            _logger.LogWarning($"An artist with a Spotify ID '{artist.Id}' wasn't found.");
+                            _logger.LogSpotifyArtistIdWasntFound(artist.Id);
                             continue;
                         }
 
@@ -262,7 +260,6 @@ public sealed class ArtistService : IArtistService
 
                     var dbRelease = release.ToDbRelease(releaseArtists, now);
 
-                    // TODO: add release date converter
                     // TODO: add tracks
 
                     dbReleases.Add(dbRelease);
@@ -297,8 +294,9 @@ public sealed class ArtistService : IArtistService
             .FirstOrDefaultAsync(cancellationToken))!;
 
 
+
     private readonly Context _context;
-    private readonly ILogger<ArtistService> _logger;
+    private readonly ILogger _logger;
     private readonly SpotifyDataExtractor.IArtistService _spotifyArtistService;
     private readonly SpotifyDataExtractor.IReleaseService _spotifyReleaseService;
 }

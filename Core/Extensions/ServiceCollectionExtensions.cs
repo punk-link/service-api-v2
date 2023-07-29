@@ -2,7 +2,6 @@
 using Core.Services.Presentations;
 using Core.Services.Releases;
 using Microsoft.Extensions.DependencyInjection;
-using SpotifyDataExtractor.Extensions;
 
 namespace Core.Extensions;
 
