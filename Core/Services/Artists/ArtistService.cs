@@ -2,10 +2,10 @@
 using Core.Converters.Spotify;
 using Core.Data;
 using Core.Extensions;
-using Core.Logging;
 using Core.Models.Artists;
 using Core.Models.Labels;
 using Core.Models.Labels.Validations;
+using Core.Services.Releases;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,12 +18,14 @@ public sealed class ArtistService : IArtistService
 {
     public ArtistService(Context context, 
         ILoggerFactory loggerFactory,
+        IReleaseService releaseService,
         SpotifyDataExtractor.IArtistService spotifyArtistService, 
         SpotifyDataExtractor.IReleaseService spotifyReleaseService)
     {
         _logger = loggerFactory.CreateLogger<ArtistService>();
 
         _context = context;
+        _releaseService = releaseService;
         _spotifyArtistService = spotifyArtistService;
         _spotifyReleaseService = spotifyReleaseService;
     }
@@ -137,11 +139,10 @@ public sealed class ArtistService : IArtistService
             }
 
 
-            async Task<Result<(List<ArtistIdContainer>, List<SpotifyDataExtractor.Models.Releases.Release>)>> AddMissingSpotifyArtists(List<SpotifyDataExtractor.Models.Releases.Release> spotifyReleases)
+            async Task<Result<List<SpotifyDataExtractor.Models.Releases.Release>>> AddMissingSpotifyArtists(List<SpotifyDataExtractor.Models.Releases.Release> spotifyReleases)
             {
                 return await Result.Success()
                     .Bind(GetFeaturingArtistIds)
-                    .Bind(GetPresentFeaturingArtists)
                     .Bind(GetMissingFeaturingArtistIds)
                     .Bind(GetMissingFeaturingArtists)
                     .Bind(AddMissingFeaturingArtists);
@@ -166,53 +167,31 @@ public sealed class ArtistService : IArtistService
                 }
 
 
-                async Task<Result<(List<ArtistIdContainer>, List<string>)>> GetPresentFeaturingArtists(List<string> spotifyArtistIds)
+                async Task<Result<List<string>>> GetMissingFeaturingArtistIds(List<string> spotifyArtistIds)
                 {
                     if (spotifyArtistIds.Count == 0)
-                        return (Enumerable.Empty<ArtistIdContainer>().ToList(), spotifyArtistIds);
-
-                    var presentSpotifyArtistContainers = await _context.Artists
-                        .Where(x => spotifyArtistIds.Contains(x.SpotifyId))
-                        .Select(x => new ArtistIdContainer{
-                                Id = x.Id, 
-                                SpotifyId = x.SpotifyId 
-                            })
-                        .ToListAsync(cancellationToken);
-
-                    return (presentSpotifyArtistContainers, spotifyArtistIds);
-                }
-
-
-                async Task<Result<(List<ArtistIdContainer>, List<string>)>> GetMissingFeaturingArtistIds((List<ArtistIdContainer> PresentArtistIdContainers, List<string> SpotifyArtistIds) container)
-                {
-                    if (container.SpotifyArtistIds.Count == 0)
-                        return (container.PresentArtistIdContainers, Enumerable.Empty<string>().ToList());
+                        return Enumerable.Empty<string>().ToList();
                 
                     var presentSpotifyArtistIds = await _context.Artists
-                        .Where(x => container.SpotifyArtistIds.Contains(x.SpotifyId))
+                        .Where(x => spotifyArtistIds.Contains(x.SpotifyId))
                         .Select(x => x.SpotifyId)
                         .ToListAsync(cancellationToken);
 
-                    var missingFeaturingArtistIds = container.SpotifyArtistIds
+                    return spotifyArtistIds
                         .Except(presentSpotifyArtistIds)
                         .ToList();
-
-                    return (container.PresentArtistIdContainers, missingFeaturingArtistIds);
                 }
 
 
-                async Task<Result<(List<ArtistIdContainer>, List<SpotifyDataExtractor.Models.Artists.Artist>)>> GetMissingFeaturingArtists((List<ArtistIdContainer> PresentArtistIdContainers, List<string> SpotifyArtistIds) container)
-                {
+                async Task<Result<List<SpotifyDataExtractor.Models.Artists.Artist>>> GetMissingFeaturingArtists(List<string> spotifyArtistIds)
                     // TODO: check for failures and replace the error message
-                    var missingArtists = await _spotifyArtistService.Get(container.SpotifyArtistIds, cancellationToken);
-                    return (container.PresentArtistIdContainers, missingArtists);
-                }
+                    => await _spotifyArtistService.Get(spotifyArtistIds, cancellationToken);
 
 
-                async Task<Result<(List<ArtistIdContainer>, List<SpotifyDataExtractor.Models.Releases.Release>)>> AddMissingFeaturingArtists((List<ArtistIdContainer> PresentArtistIdContainers, List<SpotifyDataExtractor.Models.Artists.Artist> SpotifyArtists) container)
+                async Task<Result<List<SpotifyDataExtractor.Models.Releases.Release>>> AddMissingFeaturingArtists(List<SpotifyDataExtractor.Models.Artists.Artist> spotifyArtists)
                 {
                     var dbArtists = new ConcurrentBag<Data.Artists.Artist>();
-                    Parallel.ForEach(container.SpotifyArtists, artist =>
+                    Parallel.ForEach(spotifyArtists, artist =>
                     {
                         var dbArtist = artist.ToDbArtist(managerContext.LabelId, now);
                         dbArtists.Add(dbArtist);
@@ -221,55 +200,13 @@ public sealed class ArtistService : IArtistService
                     await _context.Artists.AddRangeAsync(dbArtists, cancellationToken);
                     await _context.SaveChangesAsync(cancellationToken);
 
-                    var addedIdContainers = new List<ArtistIdContainer>(dbArtists.Count);
-                    foreach (var artist in dbArtists)
-                    {
-                        addedIdContainers.Add(new ArtistIdContainer
-                        {
-                            Id = artist.Id,
-                            SpotifyId = artist.SpotifyId
-                        });
-                    }
-
-                    container.PresentArtistIdContainers.AddRange(addedIdContainers);
-
-                    return (container.PresentArtistIdContainers.ToList(), spotifyReleases);
+                    return spotifyReleases;
                 }
             }
 
 
-            // TODO: move to ReleaseService
-            async Task<Result> AddMissingSpotifyReleases((List<ArtistIdContainer> ArtistIdContainers, List<SpotifyDataExtractor.Models.Releases.Release> Releases) container)
-            {
-                var featuringArtistDict = container.ArtistIdContainers.ToDictionary(x => x.SpotifyId, x => x.Id);
-
-                var dbReleases = new ConcurrentBag<Data.Releases.Release>();
-                Parallel.ForEach(container.Releases, release =>
-                {
-                    var releaseArtists = new List<Data.Artists.Artist>(release.Artists.Count);
-                    foreach (var artist in release.Artists)
-                    {
-                        if (!featuringArtistDict.TryGetValue(artist.Id, out var artistId))
-                        {
-                            _logger.LogSpotifyArtistIdWasntFound(artist.Id);
-                            continue;
-                        }
-
-                        releaseArtists.Add(new Data.Artists.Artist { Id = artistId });
-                    }
-
-                    var dbRelease = release.ToDbRelease(releaseArtists, now);
-
-                    // TODO: add tracks
-
-                    dbReleases.Add(dbRelease);
-                });
-
-                await _context.Releases.AddRangeAsync(dbReleases, cancellationToken);
-                await _context.SaveChangesAsync(cancellationToken);
-
-                return Result.Success();
-            }
+            async Task<Result> AddMissingSpotifyReleases(List<SpotifyDataExtractor.Models.Releases.Release> releases)
+                => await _releaseService.Add(releases, now, cancellationToken);
         }
 
 
@@ -294,9 +231,9 @@ public sealed class ArtistService : IArtistService
             .FirstOrDefaultAsync(cancellationToken))!;
 
 
-
     private readonly Context _context;
     private readonly ILogger _logger;
+    private readonly IReleaseService _releaseService;
     private readonly SpotifyDataExtractor.IArtistService _spotifyArtistService;
     private readonly SpotifyDataExtractor.IReleaseService _spotifyReleaseService;
 }

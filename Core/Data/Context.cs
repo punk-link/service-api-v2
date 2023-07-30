@@ -79,4 +79,5 @@ public class Context : DbContext
     public DbSet<PresentationConfig> PresentationConfigs { get; set; }
     public DbSet<Release> Releases { get; set; }
     public DbSet<SocialNetwork> SocialNetworks { get; set; }
+    public DbSet<Track> Tracks { get; set; }
 }
