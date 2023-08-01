@@ -85,6 +85,8 @@ tolerations: []
 affinity: {}
 
 env:
+  ASPNETCORE_URLS: http://*:80
+  ASPNETCORE_ENVIRONMENT: "Development"
   PNKL_VAULT_ADDR: "http://vault.dev.svc.cluster.local:8200"
   
   
