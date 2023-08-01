@@ -9,9 +9,6 @@ const string ServiceName = "service-api";
 
 var builder = WebApplication.CreateBuilder(args);
 
-var root = (IConfigurationRoot)  builder.Configuration;
-Console.WriteLine(root.GetDebugView());
-
 var secrets = VaultHelper.GetSecrets(builder.Configuration, ServiceName);
 
 var consulAddress = (string) secrets["consul-address"];
