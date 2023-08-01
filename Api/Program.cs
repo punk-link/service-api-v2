@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyDataExtractor.Extensions;
 
 
-const string ServiceName = "service-api";
+const string ServiceName = "service-api-v2";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +24,12 @@ var consulToken = (string) secrets["consul-token"];
 var storageName = ConsulHelper.BuildServiceName(builder.Configuration, ServiceName);
 
 builder.Configuration.AddConsulConfiguration(consulAddress, consulToken, storageName);
+
+builder.Logging.AddSentry(o =>
+{
+    o.Dsn = builder.Configuration["SentryDsn"];
+    o.AttachStacktrace = true;
+});
 
 var password = (string) secrets["database-password"];
 var userId = (string) secrets["database-username"];
@@ -45,8 +51,6 @@ builder.Services.AddSpotifyDataExtractor(options =>
     options.ClientId = builder.Configuration["SpotifySettings:ClientId"]!;
     options.ClientSecret = secrets["spotify-client-secret"];
 });
-
-// TODO: https://learn.microsoft.com/en-us/ef/core/performance/efficient-updating?tabs=ef7
 
 builder.Services.AddApiVersioning();
 builder.Services.AddControllers();
@@ -85,6 +89,7 @@ else
 app.UseHttpsRedirection();
 
 //app.UseAuthorization();
+app.UseSentryTracing();
 
 var versionSet = app.NewApiVersionSet()
     .HasApiVersion(new Asp.Versioning.ApiVersion(1, 0))
