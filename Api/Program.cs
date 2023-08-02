@@ -6,8 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyDataExtractor.Extensions;
 
 
-const string ServiceName = "service-api-v2";
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
@@ -17,11 +15,11 @@ builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 #endif
 
-var secrets = VaultHelper.GetSecrets(builder.Configuration, ServiceName);
+var secrets = VaultHelper.GetSecrets(builder.Configuration);
 
-var consulAddress = (string) secrets["consul-address"];
-var consulToken = (string) secrets["consul-token"];
-var storageName = ConsulHelper.BuildServiceName(builder.Configuration, ServiceName);
+var consulAddress = (string) secrets["consul-address"]!;
+var consulToken = (string) secrets["consul-token"]!;
+var storageName = ConsulHelper.BuildServiceName(builder.Configuration);
 
 builder.Configuration.AddConsulConfiguration(consulAddress, consulToken, storageName);
 
@@ -31,10 +29,14 @@ builder.Logging.AddSentry(o =>
     o.AttachStacktrace = true;
 });
 
-var password = (string) secrets["database-password"];
-var userId = (string) secrets["database-username"];
+var password = (string) secrets["database-password"]!;
+var userId = (string) secrets["database-username"]!;
 var connectionString = DatabaseHelper.BuildConnectionString(builder.Configuration, userId, password);
 
+builder.Services.AddDbContext<Context>(options =>
+{
+    options.UseNpgsql(connectionString);
+});
 builder.Services.AddDbContextPool<Context>(options =>
 {
     options.LogTo(Console.WriteLine);
@@ -49,7 +51,7 @@ builder.Services.AddDbContextPool<Context>(options =>
 builder.Services.AddSpotifyDataExtractor(options =>
 {
     options.ClientId = builder.Configuration["SpotifySettings:ClientId"]!;
-    options.ClientSecret = secrets["spotify-client-secret"];
+    options.ClientSecret = secrets["spotify-client-secret"]!;
 });
 
 builder.Services.AddApiVersioning();

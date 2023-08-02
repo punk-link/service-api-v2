@@ -6,10 +6,10 @@ namespace Core.Utils;
 
 public static class VaultHelper
 {
-    public static dynamic GetSecrets(IConfiguration configuration, string serviceName)
+    public static dynamic GetSecrets(IConfiguration configuration)
     {
         var vaultClient = GetVaultClient(configuration);
-        var response = vaultClient.Secrets.KVv2Read(serviceName, StorageName);
+        var response = vaultClient.Secrets.KVv2Read(configuration["ServiceName"], StorageName);
 
         dynamic data = response.Data;
         return data["data"]!;
@@ -18,16 +18,16 @@ public static class VaultHelper
 
     private static VaultClient GetVaultClient(IConfiguration configuration)
     {
-        var vaultAddress = configuration["PNKL_VAULT_ADDR"];
+        var vaultAddress = configuration["PNKL_VAULT_ADDR"]!;
+        Console.WriteLine(vaultAddress);
         var vaultConfig = new VaultConfiguration(vaultAddress);
 
-        var vaultToken = configuration["PNKL_VAULT_TOKEN"];
         var vaultClient = new VaultClient(vaultConfig);
-        vaultClient.SetToken(vaultToken);
+        vaultClient.SetToken(configuration["PNKL_VAULT_TOKEN"]);
 
         return vaultClient;
     }
-
+     
 
     private const string StorageName = "secrets";
 }

@@ -6,15 +6,16 @@ using PresentationGrpc.Services;
 using System.Net;
 
 
-const string ServiceName = "service-api";
+// TODO: add to configuration
+// const string ServiceName = "service-api";
 
 var builder = WebApplication.CreateBuilder(args);
 
-var secrets = VaultHelper.GetSecrets(builder.Configuration, ServiceName);
+var secrets = VaultHelper.GetSecrets(builder.Configuration);
 
 var consulAddress = (string) secrets["consul-address"];
 var consulToken = (string) secrets["consul-token"];
-var storageName = ConsulHelper.BuildServiceName(builder.Configuration, ServiceName);
+var storageName = ConsulHelper.BuildServiceName(builder.Configuration);
 
 builder.Configuration.AddConsulConfiguration(consulAddress, consulToken, storageName);
 
