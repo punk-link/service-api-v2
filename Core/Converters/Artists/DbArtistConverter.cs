@@ -9,7 +9,7 @@ internal static class DbArtistConverter
         => new()
         {
             Id = dbArtist.Id,
-            //mageDetails = dbArtist.ImageDetails,
+            ImageDetails = dbArtist.ImageDetails.ToImageDetails(),
             LabelId = dbArtist.LabelId,
             Name = dbArtist.Name,
             Releases = Enumerable.Empty<Models.Releases.Release>().ToList()

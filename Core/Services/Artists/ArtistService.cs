@@ -10,6 +10,7 @@ using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using Artist = Core.Models.Artists.Artist;
 
 namespace Core.Services.Artists;
@@ -210,25 +211,36 @@ public sealed class ArtistService : IArtistService
         }
 
 
-        async Task<Result<Artist>> GetArtist(string spotifyArtistId)
-        {
-            return await Task.FromResult(Result.Success(new Artist()));
-        }
+        async Task<Result<Artist>> GetArtist(string spotifyArtistId) 
+            => await GetInternal(spotifyArtistId, cancellationToken);
     }
 
 
-    public async Task<Artist> Get(int artistId, CancellationToken cancellationToken = default)
-        => (await _context.Artists
-            .Where(x => x.Id == artistId)
-            .Select(x => DbArtistConverter.ToArtist(x))
-            .FirstOrDefaultAsync(cancellationToken))!;
+    public Task<Result<Artist>> Get(ManagerContext managerContext, int artistId, CancellationToken cancellationToken = default)
+        // TODO: add manager check
+        => GetInternal(artistId, cancellationToken);
 
 
-    public async Task<SlimArtist> GetSlim(int artistId, CancellationToken cancellationToken = default)
+    public async Task<SlimArtist> GetSlim(ManagerContext managerContext, int artistId, CancellationToken cancellationToken = default)
         => (await _context.Artists
             .Where(x => x.Id == artistId)
             .Select(x => DbArtistConverter.ToSlimArtist(x))
             .FirstOrDefaultAsync(cancellationToken))!;
+
+
+    private Task<Result<Artist>> GetInternal(int artistId, CancellationToken cancellationToken)
+        => GetInternal(x => x.Id == artistId, cancellationToken);
+
+
+    private Task<Result<Artist>> GetInternal(string spotifyArtistId, CancellationToken cancellationToken)
+        => GetInternal(x => x.SpotifyId == spotifyArtistId, cancellationToken);
+
+
+    private async Task<Result<Artist>> GetInternal(Expression<Func<Data.Artists.Artist, bool>> predicate, CancellationToken cancellationToken)
+        => await _context.Artists
+            .Where(predicate)
+            .Select(x => DbArtistConverter.ToArtist(x))
+            .FirstOrDefaultAsync(cancellationToken);
 
 
     private readonly Context _context;
