@@ -16,7 +16,7 @@ public sealed class ArtistController : BaseController
     }
 
 
-    [HttpPost("spotifyId")]
+    [HttpPost("{spotifyId}")]
     [ProducesResponseType(typeof(Artist), StatusCodes.Status200OK)]
     public async Task<IActionResult> Add([FromRoute][Required] string spotifyId, CancellationToken cancellationToken = default)
     {
@@ -26,9 +26,9 @@ public sealed class ArtistController : BaseController
     }
 
 
-    [HttpGet("artistId")]
+    [HttpGet("{artistId}")]
     [ProducesResponseType(typeof(Artist), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Get([FromRoute][Required] int artistId, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Get([FromRoute][Required][Range(1, int.MaxValue)] int artistId, CancellationToken cancellationToken = default)
     {
         var context = GetManagerContext();
 
