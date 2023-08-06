@@ -17,11 +17,7 @@ builder.Logging.AddDebug();
 
 var secrets = VaultHelper.GetSecrets(builder.Configuration);
 
-var consulAddress = (string) secrets["consul-address"]!;
-var consulToken = (string) secrets["consul-token"]!;
-var storageName = ConsulHelper.BuildServiceName(builder.Configuration);
-
-builder.Configuration.AddConsulConfiguration(consulAddress, consulToken, storageName);
+AddConsulConfiguration(builder, secrets);
 
 builder.Logging.AddSentry(o =>
 {
@@ -29,30 +25,15 @@ builder.Logging.AddSentry(o =>
     o.AttachStacktrace = true;
 });
 
-var password = (string) secrets["database-password"]!;
-var userId = (string) secrets["database-username"]!;
-var connectionString = DatabaseHelper.BuildConnectionString(builder.Configuration, userId, password);
-
-builder.Services.AddDbContext<Context>(options =>
-{
-    options.UseNpgsql(connectionString);
-});
-builder.Services.AddDbContextPool<Context>(options =>
-{
-    options.LogTo(Console.WriteLine);
-    options.EnableSensitiveDataLogging(false);
-    options.UseNpgsql(connectionString, optionsBuilder =>
-    {
-        optionsBuilder.EnableRetryOnFailure();
-    });
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-}, 16);
+AddContexts(builder, secrets);
 
 builder.Services.AddSpotifyDataExtractor(options =>
 {
     options.ClientId = builder.Configuration["SpotifySettings:ClientId"]!;
     options.ClientSecret = secrets["spotify-client-secret"]!;
 });
+
+builder.Services.AddCoreServices();
 
 builder.Services.AddApiVersioning();
 builder.Services.AddControllers();
@@ -105,3 +86,37 @@ app.MapHealthChecks("/health");
 app.UseHttpLogging();
 
 app.Run();
+
+
+static void AddConsulConfiguration(WebApplicationBuilder builder, dynamic secrets)
+{
+    var consulAddress = (string)secrets["consul-address"]!;
+    var consulToken = (string)secrets["consul-token"]!;
+    var storageName = ConsulHelper.BuildServiceName(builder.Configuration);
+
+    builder.Configuration.AddConsulConfiguration(consulAddress, consulToken, storageName);
+}
+
+
+static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
+{
+    var password = (string)secrets["database-password"]!;
+    var userId = (string)secrets["database-username"]!;
+    var connectionString = DatabaseHelper.BuildConnectionString(builder.Configuration, userId, password);
+
+    builder.Services.AddDbContext<Context>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
+
+    builder.Services.AddDbContextPool<Context>(options =>
+    {
+        options.LogTo(Console.WriteLine);
+        options.EnableSensitiveDataLogging(false);
+        options.UseNpgsql(connectionString, optionsBuilder =>
+        {
+            optionsBuilder.EnableRetryOnFailure();
+        });
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+    }, 16);
+}

@@ -30,10 +30,9 @@ public class BaseController : ControllerBase
         if (result.IsFailure)
             return BadRequest(result.Error);
 
-        var value = result.Value;
-        if (value is null || value.Equals(default))
+        if (result.Value is null || result.Value.Equals(default(T)))
             return NotFound();
             
-        return Ok(value);
+        return Ok(result.Value);
     }
 }
