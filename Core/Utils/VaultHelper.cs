@@ -19,7 +19,6 @@ public static class VaultHelper
     private static VaultClient GetVaultClient(IConfiguration configuration)
     {
         var vaultAddress = configuration["PNKL_VAULT_ADDR"]!;
-        Console.WriteLine(vaultAddress);
         var vaultConfig = new VaultConfiguration(vaultAddress);
 
         var vaultClient = new VaultClient(vaultConfig);
