@@ -8,22 +8,22 @@ using SpotifyDataExtractor.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+//builder.Logging.ClearProviders();
+//builder.Logging.AddConsole();
 
-#if DEBUG
-builder.Logging.AddDebug();
-#endif
+//#if DEBUG
+//builder.Logging.AddDebug();
+//#endif
 
 var secrets = VaultHelper.GetSecrets(builder.Configuration);
 
 AddConsulConfiguration(builder, secrets);
 
-builder.Logging.AddSentry(o =>
-{
-    o.Dsn = builder.Configuration["SentryDsn"];
-    o.AttachStacktrace = true;
-});
+//builder.Logging.AddSentry(o =>
+//{
+//    o.Dsn = builder.Configuration["SentryDsn"];
+//    o.AttachStacktrace = true;
+//});
 
 AddContexts(builder, secrets);
 
