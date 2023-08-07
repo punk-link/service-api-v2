@@ -6,9 +6,9 @@ namespace Core.Services.Artists;
 
 public class SocialNetworkService : ISocialNetworkService
 {
-    public SocialNetworkService(Context context)
+    public SocialNetworkService(IDbContextFactory<Context> contextFactory)
     {
-        _context = context;
+        _context = contextFactory.CreateDbContext();
     }
 
 

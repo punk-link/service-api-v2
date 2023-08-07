@@ -104,12 +104,12 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
     var userId = (string)secrets["database-username"]!;
     var connectionString = DatabaseHelper.BuildConnectionString(builder.Configuration, userId, password);
 
-    builder.Services.AddDbContext<Context>(options =>
-    {
-        options.UseNpgsql(connectionString);
-    });
+    //builder.Services.AddDbContext<Context>(options =>
+    //{
+    //    options.UseNpgsql(connectionString);
+    //});
 
-    builder.Services.AddDbContextPool<Context>(options =>
+    builder.Services.AddPooledDbContextFactory<Context>(options =>
     {
         options.LogTo(Console.WriteLine);
         options.EnableSensitiveDataLogging(false);
