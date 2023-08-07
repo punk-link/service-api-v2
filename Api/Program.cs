@@ -73,7 +73,9 @@ else
 app.UseHttpsRedirection();
 
 //app.UseAuthorization();
-app.UseSentryTracing();
+
+//app.UseHttpLogging();
+//app.UseSentryTracing();
 
 var versionSet = app.NewApiVersionSet()
     .HasApiVersion(new Asp.Versioning.ApiVersion(1, 0))
@@ -82,8 +84,6 @@ var versionSet = app.NewApiVersionSet()
 app.MapControllers()
     .WithApiVersionSet(versionSet);
 app.MapHealthChecks("/health");
-
-app.UseHttpLogging();
 
 app.Run();
 
