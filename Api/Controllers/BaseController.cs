@@ -32,7 +32,7 @@ public class BaseController : ControllerBase
 
         if (result.Value is null || result.Value.Equals(default(T)))
             return NotFound();
-            
+
         return Ok(result.Value);
     }
 }
