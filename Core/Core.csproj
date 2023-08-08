@@ -10,9 +10,9 @@
     <PackageReference Include="Consul" Version="1.6.10.9" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.40.0" />
     <PackageReference Include="FluentValidation" Version="11.6.0" />
-    <PackageReference Include="HashiCorp.Vault" Version="0.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.9">
+    <PackageReference Include="HashiCorp.Vault" Version="0.2.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="7.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

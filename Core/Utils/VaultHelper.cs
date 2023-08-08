@@ -9,10 +9,9 @@ public static class VaultHelper
     public static dynamic GetSecrets(IConfiguration configuration)
     {
         var vaultClient = GetVaultClient(configuration);
-        var response = vaultClient.Secrets.KVv2Read(configuration["ServiceName"], StorageName);
+        var response = vaultClient.Secrets.KvV2Read(configuration["ServiceName"], StorageName);
 
-        dynamic data = response.Data;
-        return data["data"]!;
+        return response.Data.Data!;
     }
 
 
