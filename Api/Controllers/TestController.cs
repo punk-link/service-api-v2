@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SpotifyDataExtractor;
 
-namespace Core.Controllers
+namespace Api.Controllers
 {
     [Route("api/v{version:apiVersion}/tests")]
     [ApiController]
     public class TestController : ControllerBase
     {
-        public TestController(IArtistService artistService) 
-        { 
-            _artistService = artistService;    
+        public TestController(IArtistService artistService)
+        {
+            _artistService = artistService;
         }
 
 

@@ -1,3 +1,4 @@
+using Api.Utils.HelthChecks;
 using Core.Data;
 using Core.Extensions;
 using Core.Utils;
@@ -36,12 +37,9 @@ builder.Services.AddSpotifyDataExtractor(options =>
 builder.Services.AddCoreServices();
 
 builder.Services.AddApiVersioning();
-builder.Services.AddControllers();
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<Context>();
-
+builder.Services.AddControllers()
+    .AddControllersAsServices();
 builder.Services.AddMemoryCache();
-
 builder.Services.AddLogging();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -54,6 +52,10 @@ builder.Services.AddHttpLogging(logging =>
     logging.ResponseBodyLogLimit = 0;
 
 });
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<Context>()
+    .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
 var app = builder.Build();
 
@@ -104,10 +106,10 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
     var userId = (string)secrets["database-username"]!;
     var connectionString = DatabaseHelper.BuildConnectionString(builder.Configuration, userId, password);
 
-    //builder.Services.AddDbContext<Context>(options =>
-    //{
-    //    options.UseNpgsql(connectionString);
-    //});
+    builder.Services.AddDbContext<Context>(options =>
+    {
+        options.UseNpgsql(connectionString);
+    });
 
     builder.Services.AddPooledDbContextFactory<Context>(options =>
     {
