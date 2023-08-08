@@ -6,9 +6,9 @@ namespace Core.Services.Presentations;
 
 public class PresentationConfigService : IPresentationConfigService
 {
-    public PresentationConfigService(IDbContextFactory<Context> contextFactory)
+    public PresentationConfigService(Context context)
     {
-        _context = contextFactory.CreateDbContext();
+        _context = context;
     }
 
 

@@ -17,7 +17,7 @@ namespace Core.Services.Artists;
 
 public sealed class ArtistService : IArtistService
 {
-    public ArtistService(IDbContextFactory<Context> contextFactory, 
+    public ArtistService(Context context, 
         ILoggerFactory loggerFactory,
         IReleaseService releaseService,
         SpotifyDataExtractor.IArtistService spotifyArtistService, 
@@ -25,7 +25,7 @@ public sealed class ArtistService : IArtistService
     {
         _logger = loggerFactory.CreateLogger<ArtistService>();
 
-        _context = contextFactory.CreateDbContext();
+        _context = context;
         _releaseService = releaseService;
         _spotifyArtistService = spotifyArtistService;
         _spotifyReleaseService = spotifyReleaseService;

@@ -111,14 +111,14 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
         options.UseNpgsql(connectionString);
     });
 
-    builder.Services.AddPooledDbContextFactory<Context>(options =>
-    {
-        options.LogTo(Console.WriteLine);
-        options.EnableSensitiveDataLogging(false);
-        options.UseNpgsql(connectionString, optionsBuilder =>
-        {
-            optionsBuilder.EnableRetryOnFailure();
-        });
-        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    }, 16);
+    //builder.Services.AddPooledDbContextFactory<Context>(options =>
+    //{
+    //    options.LogTo(Console.WriteLine);
+    //    options.EnableSensitiveDataLogging(false);
+    //    options.UseNpgsql(connectionString, optionsBuilder =>
+    //    {
+    //        optionsBuilder.EnableRetryOnFailure();
+    //    });
+    //    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+    //}, 16);
 }

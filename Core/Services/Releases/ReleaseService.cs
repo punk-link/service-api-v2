@@ -12,11 +12,11 @@ namespace Core.Services.Releases;
 
 public sealed class ReleaseService : IReleaseService
 {
-    public ReleaseService(IDbContextFactory<Context> contextFactory, ILoggerFactory loggerFactory)
+    public ReleaseService(Context context, ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory.CreateLogger<ReleaseService>();
 
-        _context = contextFactory.CreateDbContext();
+        _context = context;
     }
 
 
