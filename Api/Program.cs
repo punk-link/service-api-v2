@@ -40,7 +40,7 @@ builder.Services.AddApiVersioning();
 builder.Services.AddControllers()
     .AddControllersAsServices();
 builder.Services.AddMemoryCache();
-builder.Services.AddLogging();
+//builder.Services.AddLogging();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
