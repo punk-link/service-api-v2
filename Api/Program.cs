@@ -108,7 +108,13 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
 
     builder.Services.AddDbContext<Context>(options =>
     {
-        options.UseNpgsql(connectionString);
+        options.LogTo(Console.WriteLine);
+        options.EnableSensitiveDataLogging(false);
+        options.UseNpgsql(connectionString, optionsBuilder =>
+        {
+            optionsBuilder.EnableRetryOnFailure();
+        });
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
     });
 
     //builder.Services.AddPooledDbContextFactory<Context>(options =>
