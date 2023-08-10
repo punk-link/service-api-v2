@@ -15,5 +15,9 @@ spec:
       targetPort: grpc
       protocol: TCP
       name: grpc
+    - port: {{ .Values.service.db.port }}
+      targetPort: db
+      protocol: TCP
+      name: db     
   selector:
     {{- include "punk-link-api-v2.selectorLabels" . | nindent 4 }}

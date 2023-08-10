@@ -54,11 +54,17 @@ spec:
               protocol: TCP
             - name: grpc
               containerPort: {{ .Values.service.grpc.port }}
-              protocol: TCP              
+              protocol: TCP
+            - name: db
+              containerPort: {{ .Values.service.db.port }}
+              protocol: TCP          
+
           livenessProbe:
             httpGet:
               path: /health
               port: http
+            initialDelaySeconds: 30
+            periodSeconds: 40              
           readinessProbe:
             httpGet:
               path: /health

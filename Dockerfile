@@ -6,7 +6,7 @@ ENV PNKL_VAULT_TOKEN=$PNKL_VAULT_TOKEN
 
 
 WORKDIR /app
-EXPOSE 80
+EXPOSE 80 5432
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0  AS build
 ARG GITHUB_TOKEN
