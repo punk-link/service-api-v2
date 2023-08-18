@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 
-namespace Core.Models.Labels.Validations;
+namespace Core.Models.Labels.Validators;
 
 public class ManagerContextValidator : AbstractValidator<ManagerContext>
 {

@@ -4,7 +4,7 @@ using Core.Data;
 using Core.Extensions;
 using Core.Models.Artists;
 using Core.Models.Labels;
-using Core.Models.Labels.Validations;
+using Core.Models.Labels.Validators;
 using Core.Services.Releases;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
@@ -216,31 +216,52 @@ public sealed class ArtistService : IArtistService
     }
 
 
-    public Task<Result<Artist>> Get(ManagerContext managerContext, int artistId, CancellationToken cancellationToken = default)
+    public Task<Result<Artist>> Get(int artistId, CancellationToken cancellationToken = default)
         // TODO: add manager check
         => GetInternal(artistId, cancellationToken);
 
 
-    public async Task<SlimArtist> GetSlim(ManagerContext managerContext, int artistId, CancellationToken cancellationToken = default)
+    public async Task<Result<List<Artist>>> GetByLabel(int labelId, CancellationToken cancellationToken = default) 
+        => await QueryArtists(x => x.LabelId == labelId)
+            .ToListAsync(cancellationToken);
+
+
+    public async Task<SlimArtist> GetSlim(int artistId, CancellationToken cancellationToken = default)
         => (await _context.Artists
             .Where(x => x.Id == artistId)
             .Select(x => DbArtistConverter.ToSlimArtist(x))
             .FirstOrDefaultAsync(cancellationToken))!;
 
 
-    private Task<Result<Artist>> GetInternal(int artistId, CancellationToken cancellationToken)
-        => GetInternal(x => x.Id == artistId, cancellationToken);
+    public async Task<List<ArtistSearchResult>> Search(string query, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
+            return Enumerable.Empty<ArtistSearchResult>().ToList();
+
+        var results = await _spotifyArtistService.Search(query, cancellationToken);
+        return results.Select(x => new ArtistSearchResult
+            {
+                ImageDetails = x.ImageDetails.ToImageDetails(),
+                Name = x.Name,
+                SpotifyId = x.Id
+            }).ToList();
+    }
 
 
-    private Task<Result<Artist>> GetInternal(string spotifyArtistId, CancellationToken cancellationToken)
-        => GetInternal(x => x.SpotifyId == spotifyArtistId, cancellationToken);
-
-
-    private async Task<Result<Artist>> GetInternal(Expression<Func<Data.Artists.Artist, bool>> predicate, CancellationToken cancellationToken)
-        => await _context.Artists
-            .Where(predicate)
-            .Select(x => DbArtistConverter.ToArtist(x))
+    private async Task<Result<Artist>> GetInternal(int artistId, CancellationToken cancellationToken)
+        => await QueryArtists(x => x.Id == artistId)
             .FirstOrDefaultAsync(cancellationToken);
+
+
+    private async Task<Result<Artist>> GetInternal(string spotifyArtistId, CancellationToken cancellationToken)
+        => await QueryArtists(x => x.SpotifyId == spotifyArtistId)
+            .FirstOrDefaultAsync(cancellationToken);
+
+
+    private IQueryable<Artist> QueryArtists(Expression<Func<Data.Artists.Artist, bool>> predicate)
+        => _context.Artists
+            .Where(predicate)
+            .Select(x => DbArtistConverter.ToArtist(x));
 
 
     private readonly Context _context;
