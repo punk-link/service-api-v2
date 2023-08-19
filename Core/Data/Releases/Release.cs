@@ -1,5 +1,6 @@
 ﻿using Core.Data.Artists;
 using Core.Data.Common;
+using Core.Models.Releases.Enums;
 
 namespace Core.Data.Releases;
 
@@ -14,6 +15,7 @@ public class Release
     public DateTime ReleaseDate { get; set; }
     public string SpotifyId { get; set; } = default!;
     public int TrackNumber { get; set; }
+    public ReleaseType Type { get; set; }
     public string Upc { get; set; } = default!;
     public DateTime Updated { get; set; }
 

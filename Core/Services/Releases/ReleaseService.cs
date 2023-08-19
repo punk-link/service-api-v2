@@ -1,4 +1,5 @@
 ﻿using Core.Converters.Artists;
+using Core.Converters.Releases;
 using Core.Converters.Spotify;
 using Core.Data;
 using Core.Extensions.Logging;
@@ -127,8 +128,15 @@ public sealed class ReleaseService : IReleaseService
     {
         return await _context.Releases
             .Where(x => x.Id == artistId)
-            .Select(x => new SlimRelease())
+            .Select(x => x.ToSlimRelease())
             .ToListAsync(cancellationToken);
+    }
+
+
+    public async Task<Result> MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default)
+    {
+        await _context.Releases.ExecuteUpdateAsync(x => x.SetProperty(x => x.Updated, x => timeStamp), cancellationToken);
+        return Result.Success();
     }
 
 
