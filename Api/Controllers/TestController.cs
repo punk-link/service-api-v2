@@ -4,7 +4,7 @@ using SpotifyDataExtractor;
 namespace Api.Controllers
 {
     [Route("api/v{version:apiVersion}/tests")]
-    [ApiController]
+    //[ApiController]
     public class TestController : ControllerBase
     {
         public TestController(IArtistService artistService)

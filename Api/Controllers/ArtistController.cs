@@ -7,7 +7,7 @@ namespace Api.Controllers;
 
 [Route("api/v{version:apiVersion}/artists")]
 [Produces("application/json")]
-[ApiController]
+//[ApiController]
 public sealed class ArtistController : BaseController
 {
     public ArtistController(IArtistService artistService)
@@ -30,9 +30,7 @@ public sealed class ArtistController : BaseController
     [ProducesResponseType(typeof(Artist), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromRoute][Required][Range(1, int.MaxValue)] int artistId, CancellationToken cancellationToken = default)
     {
-        var context = GetManagerContext();
-
-        return OkOrNotFoundOrBadRequest(await _artistService.Get(context, artistId, cancellationToken));
+        return OkOrNotFoundOrBadRequest(await _artistService.Get(artistId, cancellationToken));
     }
 
 
