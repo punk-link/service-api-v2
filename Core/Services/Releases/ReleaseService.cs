@@ -29,11 +29,11 @@ public sealed class ReleaseService : IReleaseService
             .Bind(AddReleases)
             .Bind(AddTracks);
 
-        
+
         Result<List<string>> GetSpotifyArtistIds()
         {
             var artistIds = new ConcurrentBag<string>();
-            Parallel.ForEach(releases, release => 
+            Parallel.ForEach(releases, release =>
             {
                 foreach (var artist in release.Artists)
                     artistIds.Add(artist.Id);
@@ -50,7 +50,7 @@ public sealed class ReleaseService : IReleaseService
         }
 
 
-        async Task<Result<Dictionary<string, Data.Artists.Artist>>> GetArtists(List<string> spotifyArtistIds) 
+        async Task<Result<Dictionary<string, Data.Artists.Artist>>> GetArtists(List<string> spotifyArtistIds)
             => await _context.Artists
                 .Where(x => spotifyArtistIds.Contains(x.SpotifyId))
                 .Select(x => x.ToIdOnlyDbArtist())
@@ -90,7 +90,7 @@ public sealed class ReleaseService : IReleaseService
             var releaseDict = container.DbReleases.ToDictionary(x => x.SpotifyId, x => x);
 
             var dbTracks = new ConcurrentBag<Data.Releases.Track>();
-            Parallel.ForEach(releases, release => 
+            Parallel.ForEach(releases, release =>
             {
                 if (!releaseDict.TryGetValue(release.Id, out var dbRelease))
                 {
@@ -124,20 +124,33 @@ public sealed class ReleaseService : IReleaseService
     }
 
 
-    public async Task<int> Count(CancellationToken cancellationToken = default) 
+    public async Task<int> Count(CancellationToken cancellationToken = default)
         => await _context.Releases.CountAsync(cancellationToken);
 
 
-    public async Task<List<SlimRelease>> GetSlim(int artistId, CancellationToken cancellationToken = default)
+    public async Task<Maybe<Release>> Get(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Releases
-            .Where(x => x.Id == artistId)
-            .Select(x => x.ToSlimRelease())
-            .ToListAsync(cancellationToken);
+        var release = await _context.Releases
+            .Where(x => x.Id == id)
+            .Select(x => x.ToRelease())
+            .FirstOrDefaultAsync(cancellationToken);
+        
+        if (release is null)
+            return Maybe.None;
+
+        return release;
     }
 
 
-    public async Task<List<UpcContainer>> GetUpcContainersToUpdate(DateTime updateThreshold, int skip, int top = 40, CancellationToken cancellationToken = default) 
+    // TODO
+    public async Task<List<SlimRelease>> GetSlim(int artistId, CancellationToken cancellationToken = default)
+        => await _context.Releases
+            .Where(x => x.ReleaseArtists.Any(a => a.Id == artistId))
+            .Select(x => x.ToSlimRelease())
+            .ToListAsync(cancellationToken);
+
+
+    public async Task<List<UpcContainer>> GetUpcContainersToUpdate(DateTime updateThreshold, int skip, int top = 40, CancellationToken cancellationToken = default)
         => await _context.Releases
             .Where(x => updateThreshold < x.Updated)
             .OrderBy(x => x.Id)
@@ -147,7 +160,7 @@ public sealed class ReleaseService : IReleaseService
             .ToListAsync(cancellationToken);
 
 
-    public async Task MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default) 
+    public async Task MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default)
         => await _context.Releases.ExecuteUpdateAsync(x => x.SetProperty(x => x.Updated, x => timeStamp), cancellationToken);
 
 
