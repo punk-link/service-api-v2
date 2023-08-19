@@ -1,4 +1,6 @@
-﻿namespace Core.Converters.Releases;
+﻿using Core.Models.Releases;
+
+namespace Core.Converters.Releases;
 
 internal static class DbReleaseConverter
 {
@@ -16,4 +18,12 @@ internal static class DbReleaseConverter
     public static List<Models.Releases.SlimRelease> ToSlimReleases(this IEnumerable<Data.Releases.Release> releases)
         => releases.Select(ToSlimRelease)
             .ToList();
+
+
+    public static UpcContainer ToUpcContainer(this Data.Releases.Release release)
+        => new()
+        {
+            Id = release.Id,
+            Upc = release.Upc
+        };
 }

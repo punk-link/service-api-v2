@@ -133,6 +133,16 @@ public sealed class ReleaseService : IReleaseService
     }
 
 
+    public async Task<List<UpcContainer>> GetUpcContainersToUpdate(DateTime updateThreshold, int skip, int top = 40, CancellationToken cancellationToken = default) 
+        => await _context.Releases
+            .Where(x => updateThreshold < x.Updated)
+            .OrderBy(x => x.Id)
+            .Skip(skip)
+            .Take(top)
+            .Select(x => x.ToUpcContainer())
+            .ToListAsync(cancellationToken);
+
+
     public async Task<Result> MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default)
     {
         await _context.Releases.ExecuteUpdateAsync(x => x.SetProperty(x => x.Updated, x => timeStamp), cancellationToken);

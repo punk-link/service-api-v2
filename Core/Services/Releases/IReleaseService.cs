@@ -10,8 +10,9 @@ public interface IReleaseService
 	//GetCount() int
 	//GetMissing(artistId int, artistSpotifyId string) ([]releaseSpotifyPlatformModels.Release, error)
 	//GetOne(id int) (artistModels.Release, error)
-	//GetUpcContainersToUpdate(top int, skip int, updateTreshold time.Time) []platformContracts.UpcContainer
     public Task<Result> Add(List<SpotifyDataExtractor.Models.Releases.Release> releases, DateTime timeStamp, CancellationToken cancellationToken = default);
     public Task<List<SlimRelease>> GetSlim(int artistId, CancellationToken cancellationToken = default);
+    //GetUpcContainersToUpdate(top int, skip int, updateTreshold time.Time) []platformContracts.UpcContainer
+    public Task<List<UpcContainer>> GetUpcContainersToUpdate(DateTime updateThreshold, int skip, int top = 100, CancellationToken cancellationToken = default);
 	public Task<Result> MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default);
 }
