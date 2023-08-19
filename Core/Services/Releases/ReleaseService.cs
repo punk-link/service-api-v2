@@ -124,6 +124,10 @@ public sealed class ReleaseService : IReleaseService
     }
 
 
+    public async Task<int> Count(CancellationToken cancellationToken = default) 
+        => await _context.Releases.CountAsync(cancellationToken);
+
+
     public async Task<List<SlimRelease>> GetSlim(int artistId, CancellationToken cancellationToken = default)
     {
         return await _context.Releases
@@ -143,11 +147,8 @@ public sealed class ReleaseService : IReleaseService
             .ToListAsync(cancellationToken);
 
 
-    public async Task<Result> MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default)
-    {
-        await _context.Releases.ExecuteUpdateAsync(x => x.SetProperty(x => x.Updated, x => timeStamp), cancellationToken);
-        return Result.Success();
-    }
+    public async Task MarkAsUpdated(IEnumerable<int> ids, DateTime timeStamp, CancellationToken cancellationToken = default) 
+        => await _context.Releases.ExecuteUpdateAsync(x => x.SetProperty(x => x.Updated, x => timeStamp), cancellationToken);
 
 
     private readonly Context _context;
