@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using SpotifyDataExtractor.Extensions;
 
 
-Console.WriteLine("Program started");
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.Logging.ClearProviders();
@@ -18,10 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 //#endif
 
 var secrets = VaultHelper.GetSecrets(builder.Configuration);
-Console.WriteLine("Vault added");
-
 AddConsulConfiguration(builder, secrets);
-Console.WriteLine("Consul added");
 
 //builder.Logging.AddSentry(o =>
 //{
@@ -30,7 +26,6 @@ Console.WriteLine("Consul added");
 //});
 
 AddContexts(builder, secrets);
-Console.WriteLine("Context added");
 
 builder.Services.AddSpotifyDataExtractor(options =>
 {
@@ -62,14 +57,13 @@ builder.Services.AddHealthChecks()
     .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
 var app = builder.Build();
-Console.WriteLine("App built");
 
 if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    app.UseDeveloperExceptionPage();
+    //app.UseDeveloperExceptionPage();
 }
 else
 {
@@ -94,7 +88,6 @@ app.MapControllers()
     .WithApiVersionSet(versionSet);
 
 app.Run();
-Console.WriteLine("App started");
 
 
 static void AddConsulConfiguration(WebApplicationBuilder builder, dynamic secrets)
