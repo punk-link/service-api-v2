@@ -43,8 +43,8 @@ builder.Services.AddCoreServices();
 builder.Services.AddControllers()
     .AddControllersAsServices();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpLogging(logging =>
 {
@@ -88,8 +88,8 @@ app.UseExceptionHandler(handler =>
 
 if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 }
 
 app.UseHsts();
