@@ -1,3 +1,4 @@
+using Api.Middlewares;
 using Api.Utils.HelthChecks;
 using Core.Data;
 using Core.Extensions;
@@ -102,6 +103,8 @@ app.UseHealthChecks("/health");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<CancellationSuppressionMiddleware>();
 
 var versionSet = app.NewApiVersionSet()
     .HasApiVersion(new Asp.Versioning.ApiVersion(1, 0))
