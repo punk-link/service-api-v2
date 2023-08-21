@@ -58,18 +58,6 @@ spec:
             - name: db
               containerPort: {{ .Values.service.db.port }}
               protocol: TCP          
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: http
-            failureThreshold: 2
-            periodSeconds: 10
-          startupProbe:
-            httpGet:
-              path: /health
-              port: http
-            timeoutSeconds: 7
-            failureThreshold: 12
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}-env
