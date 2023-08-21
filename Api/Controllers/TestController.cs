@@ -21,6 +21,13 @@ namespace Api.Controllers
         }
 
 
+        [HttpGet("ex")]
+        public async Task<IActionResult> GetEx()
+        {
+            throw new Exception("text");
+        }
+
+
         private readonly IArtistService _artistService;
     }
 }

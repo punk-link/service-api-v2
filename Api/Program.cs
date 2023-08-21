@@ -2,7 +2,9 @@ using Api.Utils.HelthChecks;
 using Core.Data;
 using Core.Extensions;
 using Core.Utils;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpotifyDataExtractor.Extensions;
 
@@ -33,13 +35,13 @@ builder.Services.AddSpotifyDataExtractor(options =>
     options.ClientSecret = secrets["spotify-client-secret"]!;
 });
 
-builder.Services.AddCoreServices();
-
 builder.Services.AddApiVersioning();
-builder.Services.AddControllers()
-    .AddControllersAsServices();
 builder.Services.AddMemoryCache();
 //builder.Services.AddLogging();
+
+builder.Services.AddCoreServices();
+builder.Services.AddControllers()
+    .AddControllersAsServices();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -58,19 +60,39 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+app.UseExceptionHandler(handler =>
+{
+    handler.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+
+        if (exceptionHandlerPathFeature?.Error is not null)
+        {
+            var details = new ProblemDetails
+            {
+                Instance = exceptionHandlerPathFeature!.Endpoint?.ToString(),
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal Server Error",
+                Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
+                Detail = exceptionHandlerPathFeature?.Error.Message
+            };
+
+            if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
+                details.Extensions.Add("Stacktrace", exceptionHandlerPathFeature!.Error!.StackTrace?.ToString());
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            await context.Response.WriteAsJsonAsync(details);
+        }
+    });
+});
+
 if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    //app.UseDeveloperExceptionPage();
-}
-else
-{
-    app.UseHsts();
-    //app.UseExceptionHandler();
 }
 
+app.UseHsts();
 app.UseHttpsRedirection();
 
 app.UseHealthChecks("/health");
