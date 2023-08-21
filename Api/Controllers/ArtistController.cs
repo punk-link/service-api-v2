@@ -7,7 +7,7 @@ namespace Api.Controllers;
 
 [Route("api/v{version:apiVersion}/artists")]
 [Produces("application/json")]
-//[ApiController]
+[ApiController]
 public sealed class ArtistController : BaseController
 {
     public ArtistController(IArtistService artistService)

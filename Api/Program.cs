@@ -29,7 +29,7 @@ Console.WriteLine("Consul added");
 //    o.AttachStacktrace = true;
 //});
 
-//AddContexts(builder, secrets);
+AddContexts(builder, secrets);
 Console.WriteLine("Context added");
 
 builder.Services.AddSpotifyDataExtractor(options =>
@@ -58,7 +58,7 @@ builder.Services.AddHttpLogging(logging =>
 });
 
 builder.Services.AddHealthChecks()
-    //.AddDbContextCheck<Context>()
+    .AddDbContextCheck<Context>()
     .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
 var app = builder.Build();
@@ -77,7 +77,6 @@ else
     //app.UseExceptionHandler();
 }
 
-//app.MapHealthChecks("/health");
 app.UseHealthChecks("/health");
 
 app.UseHttpsRedirection();
