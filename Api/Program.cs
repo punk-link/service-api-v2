@@ -116,7 +116,7 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
             optionsBuilder.EnableRetryOnFailure();
         });
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    });
+    }, optionsLifetime: ServiceLifetime.Singleton);
 
     builder.Services.AddPooledDbContextFactory<Context>(options =>
     {
@@ -127,7 +127,7 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
             optionsBuilder.EnableRetryOnFailure();
         });
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    }, 16);
+    });
 }
 
 
