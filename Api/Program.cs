@@ -44,8 +44,8 @@ builder.Services.AddCoreServices();
 builder.Services.AddControllers()
     .AddControllersAsServices();
 
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpLogging(logging =>
 {
@@ -57,7 +57,6 @@ builder.Services.AddHttpLogging(logging =>
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<Context>()
-    //.AddCheck<DbContextHealthCheck<Context>>(nameof(DbContextHealthCheck<Context>))
     .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
 var app = builder.Build();
@@ -66,8 +65,8 @@ app.UseExceptionHandler(ConfigureExceptionHandler(app));
 
 if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHsts();
