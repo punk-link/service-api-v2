@@ -62,31 +62,7 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-app.UseExceptionHandler(handler =>
-{
-    handler.Run(async context =>
-    {
-        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-
-        if (exceptionHandlerPathFeature?.Error is not null)
-        {
-            var details = new ProblemDetails
-            {
-                Instance = exceptionHandlerPathFeature!.Endpoint?.ToString(),
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Internal Server Error",
-                Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
-                Detail = exceptionHandlerPathFeature?.Error.Message
-            };
-
-            if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
-                details.Extensions.Add("Stacktrace", exceptionHandlerPathFeature!.Error!.StackTrace?.ToString());
-
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(details);
-        }
-    });
-});
+app.UseExceptionHandler(ConfigureExceptionHandler(app));
 
 if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 {
@@ -97,6 +73,8 @@ if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 app.UseHsts();
 app.UseHttpsRedirection();
 
+app.UseMiddleware<CancellationSuppressionMiddleware>();
+
 app.UseHealthChecks("/health");
 
 //app.UseHttpLogging();
@@ -104,8 +82,6 @@ app.UseHealthChecks("/health");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseMiddleware<CancellationSuppressionMiddleware>();
 
 var versionSet = app.NewApiVersionSet()
     .HasApiVersion(new Asp.Versioning.ApiVersion(1, 0))
@@ -144,14 +120,39 @@ static void AddContexts(WebApplicationBuilder builder, dynamic secrets)
         options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
     });
 
-    //builder.Services.AddPooledDbContextFactory<Context>(options =>
-    //{
-    //    options.LogTo(Console.WriteLine);
-    //    options.EnableSensitiveDataLogging(false);
-    //    options.UseNpgsql(connectionString, optionsBuilder =>
-    //    {
-    //        optionsBuilder.EnableRetryOnFailure();
-    //    });
-    //    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
-    //}, 16);
+    builder.Services.AddPooledDbContextFactory<Context>(options =>
+    {
+        options.LogTo(Console.WriteLine);
+        options.EnableSensitiveDataLogging(false);
+        options.UseNpgsql(connectionString, optionsBuilder =>
+        {
+            optionsBuilder.EnableRetryOnFailure();
+        });
+        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTrackingWithIdentityResolution);
+    }, 16);
 }
+
+
+static Action<IApplicationBuilder> ConfigureExceptionHandler(WebApplication app) 
+    => handler => handler.Run(async context =>
+    {
+        var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+
+        if (exceptionHandlerPathFeature?.Error is not null)
+        {
+            var details = new ProblemDetails
+            {
+                Instance = exceptionHandlerPathFeature!.Endpoint?.ToString(),
+                Status = StatusCodes.Status500InternalServerError,
+                Title = "Internal Server Error",
+                Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1",
+                Detail = exceptionHandlerPathFeature?.Error.Message
+            };
+
+            if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
+                details.Extensions.Add("Stacktrace", exceptionHandlerPathFeature!.Error!.StackTrace?.ToString());
+
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            await context.Response.WriteAsJsonAsync(details);
+        }
+    });
