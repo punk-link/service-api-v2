@@ -56,7 +56,8 @@ builder.Services.AddHttpLogging(logging =>
 });
 
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<Context>()
+    //.AddDbContextCheck<Context>()
+    .AddCheck<DbContextHealthCheck<Context>>(nameof(DbContextHealthCheck<Context>))
     .AddCheck<ControllerResolveHealthCheck>(nameof(ControllerResolveHealthCheck));
 
 var app = builder.Build();
