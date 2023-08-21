@@ -38,7 +38,6 @@ builder.Services.AddSpotifyDataExtractor(options =>
 
 builder.Services.AddApiVersioning();
 builder.Services.AddMemoryCache();
-//builder.Services.AddLogging();
 
 builder.Services.AddCoreServices();
 builder.Services.AddControllers()
