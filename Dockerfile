@@ -25,7 +25,7 @@ WORKDIR /app
 
 COPY --from=publish /app .
 
-#HEALTHCHECK --interval=6s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1/health || exit 1
+HEALTHCHECK --interval=6s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1/health || exit 1
 
 ENTRYPOINT ["dotnet", "Api.dll"]
 
