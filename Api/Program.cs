@@ -1,4 +1,3 @@
-using Api.Middlewares;
 using Api.Utils.HelthChecks;
 using Core.Data;
 using Core.Extensions;
@@ -70,8 +69,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 
 app.UseHsts();
 app.UseHttpsRedirection();
-
-//app.UseMiddleware<CancellationSuppressionMiddleware>();
 
 app.UseHealthChecks("/health");
 
