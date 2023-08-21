@@ -77,6 +77,9 @@ else
     //app.UseExceptionHandler();
 }
 
+//app.MapHealthChecks("/health");
+app.UseHealthChecks("/health");
+
 app.UseHttpsRedirection();
 
 //app.UseAuthorization();
@@ -90,7 +93,6 @@ var versionSet = app.NewApiVersionSet()
 
 app.MapControllers()
     .WithApiVersionSet(versionSet);
-app.MapHealthChecks("/health");
 
 app.Run();
 Console.WriteLine("App started");
