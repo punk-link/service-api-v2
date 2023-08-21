@@ -13,10 +13,17 @@ public class ControllerResolveHealthCheck : IHealthCheck
 
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
-        foreach (var controllerType in ControllerTypes)
+        try
+        {
+            foreach (var controllerType in ControllerTypes)
             _provider.GetRequiredService(controllerType);
 
-        return Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
+            return Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(new HealthCheckResult(HealthStatus.Unhealthy, exception: ex));
+        }
     }
 
 
