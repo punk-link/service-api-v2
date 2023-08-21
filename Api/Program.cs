@@ -71,14 +71,15 @@ else
     //app.UseExceptionHandler();
 }
 
-app.UseHealthChecks("/health");
-
 app.UseHttpsRedirection();
 
-//app.UseAuthorization();
+app.UseHealthChecks("/health");
 
 //app.UseHttpLogging();
 //app.UseSentryTracing();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 var versionSet = app.NewApiVersionSet()
     .HasApiVersion(new Asp.Versioning.ApiVersion(1, 0))
