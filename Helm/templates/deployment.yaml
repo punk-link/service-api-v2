@@ -57,7 +57,13 @@ spec:
               protocol: TCP
             - name: db
               containerPort: {{ .Values.service.db.port }}
-              protocol: TCP          
+              protocol: TCP 
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            timeoutSeconds: 30
+            failureThreshold: 12              
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}-env
