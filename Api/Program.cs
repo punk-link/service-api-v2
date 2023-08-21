@@ -71,7 +71,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
 app.UseHsts();
 app.UseHttpsRedirection();
 
-app.UseMiddleware<CancellationSuppressionMiddleware>();
+//app.UseMiddleware<CancellationSuppressionMiddleware>();
 
 app.UseHealthChecks("/health");
 
