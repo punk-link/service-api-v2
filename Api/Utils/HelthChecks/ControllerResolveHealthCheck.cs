@@ -13,10 +13,15 @@ public class ControllerResolveHealthCheck : IHealthCheck
 
     public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
+        if (_areControllersResolved)
+            return Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
+
         try
         {
             foreach (var controllerType in ControllerTypes)
             _provider.GetRequiredService(controllerType);
+
+            _areControllersResolved = true;
 
             return Task.FromResult(new HealthCheckResult(HealthStatus.Healthy));
         }
@@ -35,4 +40,5 @@ public class ControllerResolveHealthCheck : IHealthCheck
 
 
     private readonly IServiceProvider  _provider;
+    private static bool _areControllersResolved;
 }
