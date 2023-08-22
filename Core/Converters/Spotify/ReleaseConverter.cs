@@ -13,6 +13,7 @@ internal static class ReleaseConverter
             Label = release.Label,
             Name = release.Name,
             ReleaseArtists = releaseArtists,
+            // TODO
             ReleaseDate = timeStamp, //release.ReleaseDate,
             SpotifyId = release.Id,
             TrackNumber = release.TrackNumber,

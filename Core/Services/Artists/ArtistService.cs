@@ -56,7 +56,7 @@ public sealed class ArtistService : IArtistService
 
             var validator = new ManagerContextValidator();
             var validationResult = validator.ValidateArtistBelongsToLabel(managerContext, dbArtist.LabelId);
-            if (validationResult is not null)
+            if (!validationResult.IsValid && dbArtist.Id != default)
                 return Result.Failure<string>(validationResult.ToCombinedMessage());
 
             return await UpdateArtist(dbArtist);
@@ -64,10 +64,9 @@ public sealed class ArtistService : IArtistService
 
             async Task<Result<string>> AddArtist()
             {
-                // TODO: check for failures and replace the error message
                 var spotifyArtist = await _spotifyArtistService.Get(spotifyId, cancellationToken);
                 if (spotifyArtist == default)
-                    return Result.Failure<string>("Failure");
+                    return Result.Failure<string>("Can't load artist metadata from Spotify.");
 
                 var dbArtist = spotifyArtist.ToDbArtist(managerContext.LabelId, now);
                 await _context.Artists.AddAsync(dbArtist, cancellationToken);
