@@ -53,5 +53,6 @@ public readonly record struct Release
     [JsonPropertyName("tracks")]
     public TrackContainer Tracks { get; init; }
     [JsonPropertyName("album_type")]
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public ReleaseType Type { get; init; }
 }

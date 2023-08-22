@@ -5,7 +5,12 @@ namespace SpotifyDataExtractor.Models.Common;
 public readonly record struct SpotifyAccessToken
 {
     [JsonConstructor]
-    public SpotifyAccessToken() { }
+    public SpotifyAccessToken(string token, string type, int expiresIn) 
+    {
+        Token = token;
+        Type = type;
+        ExpiresIn = expiresIn;
+    }
 
 
     [JsonPropertyName("access_token")]

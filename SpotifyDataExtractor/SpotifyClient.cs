@@ -19,11 +19,13 @@ public class SpotifyClient : ISpotifyClient
     public async Task<List<T>> Get<T>(IEnumerable<string> urls, CancellationToken cancellationToken = default) where T : struct
     {
         var bag = new ConcurrentBag<T>();
-        await Parallel.ForEachAsync(urls, async (url, cancellationToken) => 
+        await Parallel.ForEachAsync(urls, new ParallelOptions
         {
-            var results = await MakeRequest<List<T>>(HttpMethod.Get, url, cancellationToken);
-            foreach (var result in results) 
-                bag.Add(result);
+            MaxDegreeOfParallelism = 1
+        }, async (url, cancellationToken) => 
+        {
+            var result = await MakeRequest<T>(HttpMethod.Get, url, cancellationToken);
+            bag.Add(result);
         });
 
         return bag.ToList();
@@ -41,10 +43,9 @@ public class SpotifyClient : ISpotifyClient
 
         var spotifyToken = await RequestToken(cancellationToken);
         var cacheDuration = GetDateTimeOffset(spotifyToken.ExpiresIn);
-
         _memoryCache.Set(SpotifyTokenCacheKey, spotifyToken.Token, cacheDuration);
 
-        return spotifyToken.Token;
+        return spotifyToken.Token;    
 
 
         static DateTimeOffset GetDateTimeOffset(int spotifyTokenExpirationTime)
@@ -62,9 +63,9 @@ public class SpotifyClient : ISpotifyClient
             => new(HttpMethod.Post, "token")
             {
                 Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>(1)
-                    {
-                        new KeyValuePair<string, string>("grant_type", "client_credentials")
-                    })
+                {
+                    new KeyValuePair<string, string>("grant_type", "client_credentials")
+                })
             };
 
 
@@ -85,15 +86,14 @@ public class SpotifyClient : ISpotifyClient
         response.EnsureSuccessStatusCode();
 
         using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        var responseContent = await JsonSerializer.DeserializeAsync<T>(stream, cancellationToken: cancellationToken);
-
-        return responseContent!;
+        return (await JsonSerializer.DeserializeAsync<T>(stream, cancellationToken: cancellationToken))!;
     }
 
 
     private async Task<T1> MakeRequest<T1>(HttpMethod method, string url, CancellationToken cancellationToken)
     {
         var accessToken = await GetAccessToken(cancellationToken);
+        
         using var request = new HttpRequestMessage(method, url);
         request.Headers.Add(HttpRequestHeader.Authorization.ToString(), $"Bearer {accessToken}");
 

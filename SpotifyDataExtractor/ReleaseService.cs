@@ -1,4 +1,6 @@
 ﻿using SpotifyDataExtractor.Models.Releases;
+using System.Diagnostics;
+using System.Text.Json;
 
 namespace SpotifyDataExtractor;
 
@@ -30,22 +32,54 @@ public class ReleaseService : IReleaseService
         if (string.IsNullOrWhiteSpace(artistId))
             return Enumerable.Empty<Release>().ToList();
 
-        var results = new List<Release>();
+        var firstReleaseContainer = await _spotifyClient.Get<ReleaseContainer>($"artists/{artistId}/albums?limit={ReleaseQueryLimit}", cancellationToken);
+        //var firstRelease = JsonSerializer.Serialize(firstReleaseContainer.Items.First());
+        if (firstReleaseContainer.Next == string.Empty)
+            return firstReleaseContainer.Items;
 
-        var skip = 0;
-        while (true)
+        if (firstReleaseContainer.Total != default)
+            return await GetByTotalNumber(firstReleaseContainer.Items);
+        
+        return await GetByNextLink(firstReleaseContainer.Items);
+
+
+        async Task<List<Release>> GetByTotalNumber(List<Release> releases)
         {
-            var urls = new List<string>(1) { $"artists/{artistId}/albums?limit={ReleaseQueryLimit}&offset={skip}" };
-            var container = await _spotifyClient.Get<ReleaseContainer>(urls, cancellationToken);
+            var urlNumber = (firstReleaseContainer.Total / ReleaseQueryLimit);
+            var urls = new List<string>(urlNumber);
 
-            results.AddRange(container.First().Items);
-            if (container.First().Next == string.Empty)
-                break;
+            var skip = 0;
+            for (int i = 0; i < urlNumber; i++)
+            {
+                skip += ReleaseQueryLimit;
+                urls.Add($"artists/{artistId}/albums?limit={ReleaseQueryLimit}&offset={skip}");
+            }
 
-            skip += ReleaseQueryLimit;
+            var containers = await _spotifyClient.Get<ReleaseContainer>(urls, cancellationToken);
+            foreach (var container in containers)
+                releases.AddRange(container.Items);
+
+            return releases;
         }
 
-        return results;
+
+        async Task<List<Release>> GetByNextLink(List<Release> releases)
+        {
+            var skip = 0;
+            while (true)
+            {
+                skip += ReleaseQueryLimit;
+                var url = $"artists/{artistId}/albums?limit={ReleaseQueryLimit}&offset={skip}";
+
+                var container = await _spotifyClient.Get<ReleaseContainer>(url, cancellationToken);
+                releases.AddRange(container.Items);
+
+                if (string.IsNullOrWhiteSpace(container.Next))
+                    break;
+            }
+
+            return releases;
+        }
     }
 
 
