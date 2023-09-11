@@ -19,10 +19,7 @@ public class SpotifyClient : ISpotifyClient
     public async Task<List<T>> Get<T>(IEnumerable<string> urls, CancellationToken cancellationToken = default) where T : struct
     {
         var bag = new ConcurrentBag<T>();
-        await Parallel.ForEachAsync(urls, new ParallelOptions
-        {
-            MaxDegreeOfParallelism = 1
-        }, async (url, cancellationToken) => 
+        await Parallel.ForEachAsync(urls, async (url, cancellationToken) => 
         {
             var result = await MakeRequest<T>(HttpMethod.Get, url, cancellationToken);
             bag.Add(result);
