@@ -1,4 +1,5 @@
 ﻿using Core.Data.Artists;
+using Core.Data.Labels;
 using Core.Data.Presentations;
 using Core.Data.Releases;
 using Microsoft.EntityFrameworkCore;
@@ -61,13 +62,18 @@ public class Context : DbContext
             .HasForeignKey(x => x.ReleaseId)
             .IsRequired();
 
+        modelBuilder.Entity<Manager>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+
         base.OnModelCreating(modelBuilder);
     }
 
 
-    public DbSet<Artist> Artists { get; set; }
-    public DbSet<PresentationConfig> PresentationConfigs { get; set; }
-    public DbSet<Release> Releases { get; set; }
-    public DbSet<SocialNetwork> SocialNetworks { get; set; }
-    public DbSet<Track> Tracks { get; set; }
+    public virtual DbSet<Artist> Artists { get; set; }
+    public virtual DbSet<Manager> Managers { get; set; }
+    public virtual DbSet<PresentationConfig> PresentationConfigs { get; set; }
+    public virtual DbSet<Release> Releases { get; set; }
+    public virtual DbSet<SocialNetwork> SocialNetworks { get; set; }
+    public virtual DbSet<Track> Tracks { get; set; }
 }

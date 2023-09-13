@@ -6,6 +6,7 @@ public readonly record struct ManagerContext
     {
     }
 
+
     public int Id { get; init; } = default!;
     public int LabelId { get; init; } = default!;
 }

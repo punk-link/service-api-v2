@@ -5,7 +5,7 @@ namespace Core.Converters;
 internal static class DbImageDetailsConverter
 {
     public static List<Models.ImageDetails> ToImageDetails(this List<ImageDetails> dbImageDetails)
-        => dbImageDetails.Select(x => ToImageDetails(x))
+        => dbImageDetails.Select(ToImageDetails)
             .ToList();
 
 
