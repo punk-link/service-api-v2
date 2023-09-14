@@ -3,8 +3,7 @@
 public readonly record struct Manager
 {
     public Manager()
-    {
-    }
+    { }
 
 
     public int Id { get; init; }

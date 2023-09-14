@@ -3,8 +3,7 @@
 public readonly record struct ArtistSearchResult
 {
     public ArtistSearchResult()
-    {
-    }
+    { }
 
 
     public string SpotifyId { get; init; } = default!;
