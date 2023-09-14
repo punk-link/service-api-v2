@@ -3,7 +3,7 @@ using FluentValidation.Results;
 
 namespace Core.Models.Labels.Validators;
 
-public class ManagerContextValidator : AbstractValidator<ManagerContext>
+internal class ManagerContextValidator : AbstractValidator<ManagerContext>
 {
     public ValidationResult ValidateArtistBelongsToLabel(ManagerContext context, int artistLabelId)
     {

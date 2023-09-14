@@ -15,8 +15,8 @@ public static class DbManagerConverter
         };
 
 
-    public static Expression<Func<Manager, Models.Labels.Manager>> ToManager() 
-        => dbManager => new Models.Labels.Manager
+    public static Models.Labels.Manager ToManager(this Manager dbManager) 
+        => new()
         {
             Id = dbManager.Id,
             LabelId = dbManager.LabelId,

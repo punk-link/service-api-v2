@@ -1,7 +1,10 @@
 ﻿using Core.Converters.Labels;
 using Core.Data;
+using Core.Extensions.CSharpFunctionalExtensions;
 using Core.Models.Labels;
+using Core.Models.Labels.Validators;
 using CSharpFunctionalExtensions;
+using CSharpFunctionalExtensions.ValueTasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -16,30 +19,42 @@ public class ManagerService : IManagerService
     }
 
 
-    public async Task<Result<Manager>> Add(ManagerContext currentManager, Manager manager, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<Manager>> Add(ManagerContext currentManager, Manager manager, CancellationToken cancellationToken = default)
     {
         var updatedManager = manager with { LabelId = currentManager.LabelId, Name = manager.Name.Trim() };
-        var now = DateTime.UtcNow;
 
         return await Result.Success()
             .Ensure(() => !string.IsNullOrWhiteSpace(updatedManager.Name), "Manager's name not provided.")
-            .Bind(() => AddInternal(manager, now, currentManager, cancellationToken));
+            .Bind(() => AddInternal(manager, DateTime.UtcNow, cancellationToken));
     }
 
 
-    public Task<Result<Manager>> AddMaster(string labelName, string managerName, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<Manager>> AddMaster(string labelName, string managerName, CancellationToken cancellationToken = default)
     {
-        var manager = new Manager
+        return await Result.Success()
+            .EnsureWithValidator(() => LabelValidator.ValidateName(labelName))
+            .EnsureWithValidator(() => ManagerValidator.ValidateName(managerName))
+            .Bind(() => _labelService.Add(labelName, cancellationToken))
+            .Bind(AddManager);
+
+
+        Task<Result<Manager>> AddManager(Label label)
         {
-            Name = managerName.Trim()
-        };
-        throw new NotImplementedException();
+            var manager = new Manager
+            {
+                LabelId = label.Id,
+                Name = managerName.Trim(),
+            };
+
+            return AddInternal(manager, DateTime.UtcNow, cancellationToken);
+        }
     }
 
 
-    public async Task<List<Manager>> Get(ManagerContext currentManager, CancellationToken cancellationToken = default)
-        => await GetInternal(x => x.LabelId == currentManager.LabelId)
+    public Task<List<Manager>> Get(ManagerContext currentManager, CancellationToken cancellationToken = default)
+        => GetInternal(x => x.LabelId == currentManager.LabelId)
             .ToListAsync(cancellationToken);
+
 
     public async Task<Manager> Get(ManagerContext currentManager, int managerId, CancellationToken cancellationToken = default)
     {
@@ -58,13 +73,48 @@ public class ManagerService : IManagerService
     }
 
 
-    public Task<Result<Manager>> Modify(ManagerContext currentManager, Manager manager)
+    public async ValueTask<Result<Manager>> Modify(ManagerContext currentManager, Manager manager, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await Result.Success()
+            .EnsureWithValidator(() => ManagerValidator.ValidateName(manager.Name))
+            .Map(GetDbManager)
+            .Ensure(maybeManager => maybeManager.HasValue, "The modified managed was not found.")
+            .Map(maybeManager => maybeManager.Value)
+            .Ensure(dbManager => dbManager.LabelId == currentManager.LabelId, "The modified managed does not belong to the current label.")
+            .Map(Modify);
+
+
+        async Task<Maybe<Data.Labels.Manager>> GetDbManager()
+        {
+            var dbManager = await _context.Managers
+                .Where(x => x.Id == manager.Id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (dbManager is null)
+                return Maybe.None;
+
+            return dbManager;
+        }
+
+
+        async Task<Manager> Modify(Data.Labels.Manager dbManager)
+        {
+            var trimmedName = manager.Name.Trim();
+            if (trimmedName == dbManager.Name)
+                return dbManager.ToManager();
+
+            dbManager.Name = trimmedName;
+            dbManager.Updated = DateTime.UtcNow;
+
+            _context.Managers.Update(dbManager);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return await GetInternal(dbManager.Id, cancellationToken);
+        }
     }
 
 
-    private async Task<Result<Manager>> AddInternal(Manager manager, DateTime timeStamp, ManagerContext managerContext = default, CancellationToken cancellationToken = default)
+    private async Task<Result<Manager>> AddInternal(Manager manager, DateTime timeStamp, CancellationToken cancellationToken = default)
     {
         var dbManager = manager.ToDbManager(timeStamp);
         await _context.Managers.AddAsync(dbManager, cancellationToken);
@@ -80,11 +130,10 @@ public class ManagerService : IManagerService
             .FirstOrDefaultAsync(cancellationToken);
     
 
-    // TODO: check query evaluation for select
     private IQueryable<Manager> GetInternal(Expression<Func<Data.Labels.Manager, bool>> conditions)
         => _context.Managers
             .Where(conditions)
-            .Select(DbManagerConverter.ToManager());
+            .Select(x => x.ToManager());
 
 
     private readonly Context _context;

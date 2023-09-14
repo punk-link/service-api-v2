@@ -65,12 +65,25 @@ public class Context : DbContext
         modelBuilder.Entity<Manager>()
             .Property(x => x.Id)
             .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Manager>()
+            .HasIndex(x => x.LabelId)
+            .IsUnique();
+
+        modelBuilder.Entity<Label>()
+            .Property(x => x.Id)
+            .ValueGeneratedOnAdd();
+        modelBuilder.Entity<Label>()
+            .HasMany(x => x.Managers)
+            .WithOne(x => x.Label)
+            .HasForeignKey(x => x.LabelId)
+            .IsRequired();
 
         base.OnModelCreating(modelBuilder);
     }
 
 
     public virtual DbSet<Artist> Artists { get; set; }
+    public virtual DbSet<Label> Labels { get; set; }
     public virtual DbSet<Manager> Managers { get; set; }
     public virtual DbSet<PresentationConfig> PresentationConfigs { get; set; }
     public virtual DbSet<Release> Releases { get; set; }
