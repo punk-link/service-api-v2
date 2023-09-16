@@ -1,9 +1,8 @@
 ﻿using Core.Data.Labels;
-using System.Linq.Expressions;
 
 namespace Core.Converters.Labels;
 
-public static class DbManagerConverter
+internal static class DbManagerConverter
 {
     public static Manager ToDbManager(this Models.Labels.Manager manager, DateTime timeStamp)
         => new()

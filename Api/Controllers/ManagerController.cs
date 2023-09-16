@@ -51,7 +51,7 @@ public class ManagerController : BaseController
     public async Task<IActionResult> Get()
     {
         var context = GetManagerContext();
-        return Ok(await _managerService.Get(context));
+        return OkOrNotFound(await _managerService.Get(context));
     }
 
 
@@ -65,7 +65,7 @@ public class ManagerController : BaseController
     public async Task<IActionResult> Get([FromRoute] int id)
     {
         var context = GetManagerContext();
-        return Ok(await _managerService.Get(context, id));
+        return OkOrNotFound(await _managerService.Get(context, id));
     }
 
 

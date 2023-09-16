@@ -1,6 +1,4 @@
 ﻿using SpotifyDataExtractor.Models.Releases;
-using System.Diagnostics;
-using System.Text.Json;
 
 namespace SpotifyDataExtractor;
 

@@ -25,6 +25,15 @@ public class BaseController : ControllerBase
     }
 
 
+    protected IActionResult OkOrNotFound<T>(T result)
+    {
+        if (result is null || result.Equals(default(T)))
+            return NotFound();
+
+        return Ok(result);
+    }
+
+
     protected IActionResult OkOrNotFoundOrBadRequest<T>(Result<T> result)
     {
         if (result.IsFailure)
