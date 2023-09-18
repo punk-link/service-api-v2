@@ -5,7 +5,7 @@ namespace Core.Models.Labels.Validators;
 
 internal class ManagerValidator : AbstractValidator<Manager>
 {
-    public static ValidationResult ValidateName(string managerName)
+    public static ValidationResult ValidateName(string? managerName)
     {
         var trimmedManagerName = managerName.Trim();
         if (string.IsNullOrWhiteSpace(trimmedManagerName))

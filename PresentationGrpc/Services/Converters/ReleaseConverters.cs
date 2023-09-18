@@ -8,9 +8,11 @@ internal static class ReleaseConverters
         => releases.Select(release => new SlimRelease
         {
             Id = release.Id,
-            ImageDetails = ImageDetailsConverters.Convert(release.ImageDetails),
+            // TODO: add a list
+            ImageDetails = ImageDetailsConverters.Convert(release.ImageDetails.First()),
             Name = release.Name,
             ReleaseDate = Timestamp.FromDateTime(release.ReleaseDate.ToDateTime(TimeOnly.MinValue)),
-            Type = release.Type
+            // TODO: add type support
+            Type = release.Type.ToString()
         }).ToList();
 }

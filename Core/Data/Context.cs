@@ -11,6 +11,11 @@ public class Context : DbContext
     public Context(DbContextOptions<Context> options) : base(options) 
     { }
 
+    
+    [Obsolete("For test purposes only")]
+    public Context()
+    { }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

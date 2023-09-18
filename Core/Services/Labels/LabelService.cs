@@ -17,26 +17,25 @@ public class LabelService : ILabelService
     }
 
 
-    public async ValueTask<Result<Label>> Add(string labelName, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<Label>> Add(string? labelName, CancellationToken cancellationToken = default)
     {
-        var newLabel = new Label
-        {
-            Name = labelName.Trim()
-        };
-
         return await Result.Success()
-            .EnsureWithValidator(() => LabelValidator.ValidateName(newLabel.Name))
+            .EnsureWithValidator(() => LabelValidator.ValidateName(labelName))
             .Map(AddLabel);
 
 
-        async Task<Label> AddLabel()
+        async ValueTask<Label> AddLabel()
         {
-            var dbLabel = newLabel.ToDbLabel(DateTime.UtcNow);
-            await _context.Labels.AddAsync(dbLabel, cancellationToken);
+            var dbLabel = new Label
+            {
+                Name = labelName!.Trim()
+            }.ToDbLabel(DateTime.UtcNow);
 
+            await _context.Labels.AddAsync(dbLabel, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return await GetInternal(dbLabel.Id, cancellationToken);
+            var xx = await GetInternal(dbLabel.Id, cancellationToken);
+            return xx;
         }
     }
 
@@ -92,7 +91,7 @@ public class LabelService : ILabelService
     }
 
 
-    private async Task<Label> GetInternal(int id, CancellationToken cancellationToken) 
+    private async ValueTask<Label> GetInternal(int id, CancellationToken cancellationToken) 
         => await _context.Labels
             .Where(x => x.Id == id)
             .Select(x => x.ToLabel())

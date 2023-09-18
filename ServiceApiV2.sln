@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PresentationGrpc", "Present
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{63DCDEDD-C8C2-4541-B532-BABFB233F482}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotifyDataExtractor", "SpotifyDataExtractor\SpotifyDataExtractor.csproj", "{2070D593-ED2B-4573-B6DD-A834F0B88EDB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpotifyDataExtractor", "SpotifyDataExtractor\SpotifyDataExtractor.csproj", "{2070D593-ED2B-4573-B6DD-A834F0B88EDB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreTests", "CoreTests\CoreTests.csproj", "{F2CC37E0-931C-47B9-8E9F-F23EB683CBF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2070D593-ED2B-4573-B6DD-A834F0B88EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2070D593-ED2B-4573-B6DD-A834F0B88EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2070D593-ED2B-4573-B6DD-A834F0B88EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2CC37E0-931C-47B9-8E9F-F23EB683CBF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2CC37E0-931C-47B9-8E9F-F23EB683CBF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2CC37E0-931C-47B9-8E9F-F23EB683CBF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2CC37E0-931C-47B9-8E9F-F23EB683CBF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
