@@ -34,8 +34,7 @@ public class LabelService : ILabelService
             await _context.Labels.AddAsync(dbLabel, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            var xx = await GetInternal(dbLabel.Id, cancellationToken);
-            return xx;
+            return await GetInternal(dbLabel.Id, cancellationToken);
         }
     }
 
