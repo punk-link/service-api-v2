@@ -1,6 +1,7 @@
 using Core.Data;
 using Core.Models.Labels;
 using Core.Services.Labels;
+using CoreTests.Shared;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 
@@ -30,8 +31,7 @@ public class LabelServiceTest
 
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
+    [ClassData(typeof(EmptyStringTestData))]
     public async Task Add_ShouldReturnFailureWhenLabelNameIsEmpty(string? labelName)
     {
         var sut = new LabelService(_context);
@@ -59,7 +59,7 @@ public class LabelServiceTest
     {
         var sut = new LabelService(_context);
 
-        var result = await sut.Get(DefaultAddingManagerContext, 0);
+        var result = await sut.Get(ManagerContexts.DefaultAddingManagerContext, 0);
 
         Assert.Equal(default, result);
     }
@@ -70,7 +70,7 @@ public class LabelServiceTest
     {
         var sut = new LabelService(_context);
 
-        var result = await sut.Get(DifferentLabelManagerContext, AddedLabelId);
+        var result = await sut.Get(ManagerContexts.DifferentLabelManagerContext, AddedLabelId);
 
         Assert.Equal(default, result);
     }
@@ -81,7 +81,7 @@ public class LabelServiceTest
     {
         var sut = new LabelService(_context);
 
-        var result = await sut.Get(DefaultAddingManagerContext, AddedLabelId);
+        var result = await sut.Get(ManagerContexts.DefaultAddingManagerContext, AddedLabelId);
 
         Assert.NotEqual(default, result);
         Assert.Equal(AddedLabelId, result.Id);
@@ -89,8 +89,7 @@ public class LabelServiceTest
 
 
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
+    [ClassData(typeof(EmptyStringTestData))]
     public async Task Modify_ShouldReturnFailureWhenLabelNameIsEmpty(string? labelName)
     {
         var sut = new LabelService(_context);
@@ -102,7 +101,7 @@ public class LabelServiceTest
 #pragma warning restore CS8601 // Possible null reference assignment.
         };
         
-        var result = await sut.Modify(DefaultModifyingManagerContext, label);
+        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, label);
 
         Assert.True(result.IsFailure);
     }
@@ -118,7 +117,7 @@ public class LabelServiceTest
             Name = ModifiedLabelName
         };
         
-        var result = await sut.Modify(DefaultModifyingManagerContext, label);
+        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, label);
 
         Assert.True(result.IsFailure);
     }
@@ -134,7 +133,7 @@ public class LabelServiceTest
             Name = ModifiedLabelName
         };
         
-        var result = await sut.Modify(DifferentLabelManagerContext, label);
+        var result = await sut.Modify(ManagerContexts.DifferentLabelManagerContext, label);
 
         Assert.True(result.IsFailure);
     }
@@ -150,7 +149,7 @@ public class LabelServiceTest
             Name = ModifiedLabelName
         };
         
-        var result = await sut.Modify(DefaultModifyingManagerContext, label);
+        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, label);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(ModifiedLabelName, result.Value.Name);
@@ -162,24 +161,6 @@ public class LabelServiceTest
     
     private const int ModifiedLabelId = 2;
     private const string ModifiedLabelName = "My modified label";
-
-    private static readonly ManagerContext DefaultAddingManagerContext = new()
-    {
-        Id = 1,
-        LabelId = 1
-    };
-
-    private static readonly ManagerContext DefaultModifyingManagerContext = new()
-    {
-        Id = 1,
-        LabelId = 2
-    };
-
-    private static readonly ManagerContext DifferentLabelManagerContext = new()
-    {
-        Id = 1,
-        LabelId = 3
-    };
 
     private readonly List<Core.Data.Labels.Label> _labels = new()
     {

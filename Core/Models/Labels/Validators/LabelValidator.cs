@@ -9,14 +9,10 @@ internal class LabelValidator : AbstractValidator<Label>
     {
         var trimmedLabelName = labelName?.Trim();
         if (string.IsNullOrWhiteSpace(trimmedLabelName))
-        {
-            Label label;
-
             return new ValidationResult(new List<ValidationFailure>(1)
             {
-                new(nameof(label.Name), "Label's name not provided.")
+                new(nameof(Label.Name), "Label's name not provided.")
             });
-        }
 
         return new ValidationResult();
     }

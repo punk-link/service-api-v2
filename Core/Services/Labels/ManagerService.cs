@@ -20,30 +20,26 @@ public class ManagerService : IManagerService
 
 
     public async ValueTask<Result<Manager>> Add(ManagerContext currentManager, Manager manager, CancellationToken cancellationToken = default)
-    {
-        var newManager = manager with { LabelId = currentManager.LabelId, Name = manager.Name.Trim() };
-
-        return await Result.Success()
-            .EnsureWithValidator(() => ManagerValidator.ValidateName(newManager.Name))
-            .Bind(() => AddInternal(manager, DateTime.UtcNow, cancellationToken));
-    }
+        => await Result.Success()
+            .EnsureWithValidator(() => ManagerValidator.ValidateName(manager.Name))
+            .Bind(() => AddInternal(manager with { LabelId = currentManager.LabelId, Name = manager.Name.Trim() }, DateTime.UtcNow, cancellationToken));
 
 
-    public async ValueTask<Result<Manager>> AddMaster(string labelName, string managerName, CancellationToken cancellationToken = default)
+    public async ValueTask<Result<Manager>> AddMaster(string? labelName, string? managerName, CancellationToken cancellationToken = default)
     {
         return await Result.Success()
             .EnsureWithValidator(() => LabelValidator.ValidateName(labelName))
             .EnsureWithValidator(() => ManagerValidator.ValidateName(managerName))
             .Bind(() => _labelService.Add(labelName, cancellationToken))
-            .Bind(AddMaster);
+            .Bind(AddMasterInternal);
 
 
-        ValueTask<Result<Manager>> AddMaster(Label label)
+        ValueTask<Result<Manager>> AddMasterInternal(Label label)
         {
             var manager = new Manager
             {
                 LabelId = label.Id,
-                Name = managerName.Trim(),
+                Name = managerName!.Trim(),
             };
 
             return AddInternal(manager, DateTime.UtcNow, cancellationToken);
@@ -59,10 +55,7 @@ public class ManagerService : IManagerService
     public async Task<Manager> Get(ManagerContext currentManager, int managerId, CancellationToken cancellationToken = default)
     {
         var manager = await GetInternal(managerId, cancellationToken);
-        if (manager.LabelId == currentManager.LabelId)
-            return manager;
-
-        return default;
+        return manager.LabelId == currentManager.LabelId ? manager : default;
     }
 
 

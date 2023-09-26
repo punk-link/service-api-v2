@@ -42,10 +42,7 @@ public class LabelService : ILabelService
     public async Task<Label> Get(ManagerContext currentManager, int id, CancellationToken cancellationToken = default)
     {
         var label = await GetInternal(id, cancellationToken);
-        if (label.Id == currentManager.LabelId)
-            return label;
-
-        return default;
+        return label.Id == currentManager.LabelId ? label : default;
     }
 
 
