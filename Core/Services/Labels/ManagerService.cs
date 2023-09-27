@@ -7,22 +7,24 @@ using CSharpFunctionalExtensions;
 using CSharpFunctionalExtensions.ValueTasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Core.Utils.Time;
 
 namespace Core.Services.Labels;
 
 public class ManagerService : IManagerService
 {
-    public ManagerService(Context context, ILabelService labelService)
+    public ManagerService(Context context, ILabelService labelService, ITimeProvider timeProvider)
     {
         _context = context;
         _labelService = labelService;
+        _timeProvider = timeProvider;
     }
 
 
     public async ValueTask<Result<Manager>> Add(ManagerContext currentManager, Manager manager, CancellationToken cancellationToken = default)
         => await Result.Success()
             .EnsureWithValidator(() => ManagerValidator.ValidateName(manager.Name))
-            .Bind(() => AddInternal(manager with { LabelId = currentManager.LabelId, Name = manager.Name.Trim() }, DateTime.UtcNow, cancellationToken));
+            .Bind(() => AddInternal(manager with { LabelId = currentManager.LabelId, Name = manager.Name.Trim() }, _timeProvider.UtcNow, cancellationToken));
 
 
     public async ValueTask<Result<Manager>> AddMaster(string? labelName, string? managerName, CancellationToken cancellationToken = default)
@@ -42,7 +44,7 @@ public class ManagerService : IManagerService
                 Name = managerName!.Trim(),
             };
 
-            return AddInternal(manager, DateTime.UtcNow, cancellationToken);
+            return AddInternal(manager, _timeProvider.UtcNow, cancellationToken);
         }
     }
 
@@ -97,7 +99,7 @@ public class ManagerService : IManagerService
                 return dbManager.ToManager();
 
             dbManager.Name = trimmedName;
-            dbManager.Updated = DateTime.UtcNow;
+            dbManager.Updated = _timeProvider.UtcNow;
 
             _context.Managers.Update(dbManager);
             await _context.SaveChangesAsync(cancellationToken);
@@ -131,4 +133,5 @@ public class ManagerService : IManagerService
 
     private readonly Context _context;
     private readonly ILabelService _labelService;
+    private readonly ITimeProvider _timeProvider;
 }

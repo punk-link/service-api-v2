@@ -1,6 +1,7 @@
 using Core.Data;
 using Core.Models.Labels;
 using Core.Services.Labels;
+using Core.Utils.Time;
 using CoreTests.Shared;
 
 namespace CoreTests.Services.Artists;
@@ -24,7 +25,10 @@ public class LabelServiceTest
 
         contextMock.SaveChangesAsync(Arg.Any<CancellationToken>());
 
-        _sut = new LabelService(contextMock);
+        var timeProviderMock = Substitute.For<ITimeProvider>();
+        timeProviderMock.UtcNow.Returns(DateTime.UtcNow);
+
+        _sut = new LabelService(contextMock, timeProviderMock);
     }
 
 

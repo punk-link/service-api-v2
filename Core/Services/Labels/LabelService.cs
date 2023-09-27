@@ -3,6 +3,7 @@ using Core.Data;
 using Core.Extensions.CSharpFunctionalExtensions;
 using Core.Models.Labels;
 using Core.Models.Labels.Validators;
+using Core.Utils.Time;
 using CSharpFunctionalExtensions;
 using CSharpFunctionalExtensions.ValueTasks;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,10 @@ namespace Core.Services.Labels;
 
 public class LabelService : ILabelService
 {
-    public LabelService(Context context)
+    public LabelService(Context context, ITimeProvider timeProvider)
     {
         _context = context;
+        _timeProvider = timeProvider;
     }
 
 
@@ -29,7 +31,7 @@ public class LabelService : ILabelService
             var dbLabel = new Label
             {
                 Name = labelName!.Trim()
-            }.ToDbLabel(DateTime.UtcNow);
+            }.ToDbLabel(_timeProvider.UtcNow);
 
             await _context.Labels.AddAsync(dbLabel, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
@@ -77,7 +79,7 @@ public class LabelService : ILabelService
                 return dbLabel.ToLabel();
 
             dbLabel.Name = trimmedName;
-            dbLabel.Updated = DateTime.UtcNow;
+            dbLabel.Updated = _timeProvider.UtcNow;
 
             _context.Labels.Update(dbLabel);
             await _context.SaveChangesAsync(cancellationToken);
@@ -95,4 +97,5 @@ public class LabelService : ILabelService
 
 
     private readonly Context _context;
+    private readonly ITimeProvider _timeProvider;
 }
