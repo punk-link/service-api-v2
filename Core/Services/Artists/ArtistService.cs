@@ -8,7 +8,6 @@ using Core.Models.Labels.Validators;
 using Core.Services.Releases;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Artist = Core.Models.Artists.Artist;
@@ -18,13 +17,10 @@ namespace Core.Services.Artists;
 public sealed class ArtistService : IArtistService
 {
     public ArtistService(Context context, 
-        ILoggerFactory loggerFactory,
         IReleaseService releaseService,
         SpotifyDataExtractor.IArtistService spotifyArtistService, 
         SpotifyDataExtractor.IReleaseService spotifyReleaseService)
     {
-        _logger = loggerFactory.CreateLogger<ArtistService>();
-
         _context = context;
         _releaseService = releaseService;
         _spotifyArtistService = spotifyArtistService;
@@ -228,7 +224,7 @@ public sealed class ArtistService : IArtistService
     public async Task<SlimArtist> GetSlim(int artistId, CancellationToken cancellationToken = default)
         => (await _context.Artists
             .Where(x => x.Id == artistId)
-            .Select(x => DbArtistConverter.ToSlimArtist(x))
+            .Select(x => x.ToSlimArtist())
             .FirstOrDefaultAsync(cancellationToken))!;
 
 
@@ -260,11 +256,10 @@ public sealed class ArtistService : IArtistService
     private IQueryable<Artist> QueryArtists(Expression<Func<Data.Artists.Artist, bool>> predicate)
         => _context.Artists
             .Where(predicate)
-            .Select(x => DbArtistConverter.ToArtist(x));
+            .Select(x => x.ToArtist());
 
 
     private readonly Context _context;
-    private readonly ILogger _logger;
     private readonly IReleaseService _releaseService;
     private readonly SpotifyDataExtractor.IArtistService _spotifyArtistService;
     private readonly SpotifyDataExtractor.IReleaseService _spotifyReleaseService;

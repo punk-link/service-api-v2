@@ -2,11 +2,8 @@
 using Core.Models.Labels;
 using Core.Services.Labels;
 using CoreTests.Shared;
-using CSharpFunctionalExtensions;
-using MockQueryable.NSubstitute;
-using NSubstitute;
 
-namespace CoreTests;
+namespace CoreTests.Services.Artists;
 
 public class ManagerServiceTests
 {
@@ -26,8 +23,6 @@ public class ManagerServiceTests
             });
 
         contextMock.SaveChangesAsync(Arg.Any<CancellationToken>());
-        
-        _context = contextMock;
 
         var labelServiceMock = Substitute.For<ILabelService>();
         labelServiceMock.Add(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -42,7 +37,7 @@ public class ManagerServiceTests
                 });
             });
 
-        _labelService = labelServiceMock;
+        _sut = new ManagerService(contextMock, labelServiceMock);
     }
 
 
@@ -50,15 +45,14 @@ public class ManagerServiceTests
     [ClassData(typeof(EmptyStringTestData))]
     public async Task Add_ShouldReturnFailureWhenManagerNameIsEmpty(string? managerName)
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
 #pragma warning disable CS8601 // Possible null reference assignment.
             Name = managerName
 #pragma warning restore CS8601 // Possible null reference assignment.
         };
-        
-        var result = await sut.Add(ManagerContexts.DefaultAddingManagerContext, manager);
+
+        var result = await _sut.Add(ManagerContexts.DefaultAddingManagerContext, manager);
 
         Assert.True(result.IsFailure);
     }
@@ -67,13 +61,12 @@ public class ManagerServiceTests
     [Fact]
     public async Task Add_ShouldReturnAddedManager()
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
             Name = AddedManagerName
         };
-        
-        var result = await sut.Add(ManagerContexts.DefaultAddingManagerContext, manager);
+
+        var result = await _sut.Add(ManagerContexts.DefaultAddingManagerContext, manager);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(AddedManagerName, result.Value.Name);
@@ -84,9 +77,7 @@ public class ManagerServiceTests
     [ClassData(typeof(EmptyStringTestData))]
     public async Task AddMaster_ShouldReturnFailureWhenLabelNameIsEmpty(string? labelName)
     {
-        var sut = new ManagerService(_context, _labelService);
-        
-        var result = await sut.AddMaster(labelName, AddedManagerName);
+        var result = await _sut.AddMaster(labelName, AddedManagerName);
 
         Assert.True(result.IsFailure);
     }
@@ -96,9 +87,7 @@ public class ManagerServiceTests
     [ClassData(typeof(EmptyStringTestData))]
     public async Task AddMaster_ShouldReturnFailureWhenManagerNameIsEmpty(string? managerName)
     {
-        var sut = new ManagerService(_context, _labelService);
-        
-        var result = await sut.AddMaster(AddedLabelName, managerName);
+        var result = await _sut.AddMaster(AddedLabelName, managerName);
 
         Assert.True(result.IsFailure);
     }
@@ -107,9 +96,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task AddMaster_ShouldReturnAddedMasterManager()
     {
-        var sut = new ManagerService(_context, _labelService);
-        
-        var result = await sut.AddMaster(AddedLabelName, AddedManagerName);
+        var result = await _sut.AddMaster(AddedLabelName, AddedManagerName);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(AddedManagerName, result.Value.Name);
@@ -119,9 +106,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task Get_ShouldReturnEmptyListOfManagersWhenMasterManagerIdDoesNotMatch()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var results = await sut.Get(ManagerContexts.DifferentLabelManagerContext);
+        var results = await _sut.Get(ManagerContexts.DifferentLabelManagerContext);
 
         Assert.NotNull(results);
         Assert.Empty(results);
@@ -131,14 +116,12 @@ public class ManagerServiceTests
     [Fact]
     public async Task Get_ShouldReturnManagers()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var results = await sut.Get(ManagerContexts.DefaultAddingManagerContext);
+        var results = await _sut.Get(ManagerContexts.DefaultAddingManagerContext);
 
         Assert.NotNull(results);
         Assert.NotEmpty(results);
         Assert.Equal(_managers.Count(x => x.LabelId == ManagerContexts.DefaultAddingManagerContext.LabelId), results.Count);
-        foreach(var manager in results)
+        foreach (var manager in results)
             Assert.Equal(ManagerContexts.DefaultAddingManagerContext.LabelId, manager.LabelId);
     }
 
@@ -146,9 +129,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task Get_ShouldReturnDefaultManagerWhenIdDoesNotMatch()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var result = await sut.Get(ManagerContexts.DefaultAddingManagerContext, 0);
+        var result = await _sut.Get(ManagerContexts.DefaultAddingManagerContext, 0);
 
         Assert.Equal(default, result);
     }
@@ -157,9 +138,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task Get_ShouldReturnDefaultManagerWhenManagerContextIdDoesNotMatch()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var result = await sut.Get(ManagerContexts.DifferentLabelManagerContext, AddedManagerId);
+        var result = await _sut.Get(ManagerContexts.DifferentLabelManagerContext, AddedManagerId);
 
         Assert.Equal(default, result);
     }
@@ -168,9 +147,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task Get_ShouldReturnManager()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var result = await sut.Get(ManagerContexts.DefaultAddingManagerContext, AddedManagerId);
+        var result = await _sut.Get(ManagerContexts.DefaultAddingManagerContext, AddedManagerId);
 
         Assert.Equal(AddedManagerId, result.Id);
     }
@@ -179,9 +156,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task GetContext_ShouldReturnDefaultManagerContextWhenIdDoesNotMatch()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var result = await sut.GetContext(0);
+        var result = await _sut.GetContext(0);
 
         Assert.Equal(default, result);
     }
@@ -190,9 +165,7 @@ public class ManagerServiceTests
     [Fact]
     public async Task GetContext_ShouldReturnManagerContext()
     {
-        var sut = new ManagerService(_context, _labelService);
-
-        var result = await sut.GetContext(AddedManagerId);
+        var result = await _sut.GetContext(AddedManagerId);
 
         Assert.Equal(AddedManagerId, result.Id);
     }
@@ -202,7 +175,6 @@ public class ManagerServiceTests
     [ClassData(typeof(EmptyStringTestData))]
     public async Task Modify_ShouldReturnFailureWhenManagerNameIsEmpty(string? managerName)
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
             Id = ModifiedManagerId,
@@ -211,8 +183,8 @@ public class ManagerServiceTests
             Name = managerName
 #pragma warning restore CS8601 // Possible null reference assignment.
         };
-        
-        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
+
+        var result = await _sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
 
         Assert.True(result.IsFailure);
     }
@@ -221,15 +193,14 @@ public class ManagerServiceTests
     [Fact]
     public async Task Modify_ShouldReturnFailureWhenManagerNotFound()
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
             Id = 0,
             LabelId = ManagerContexts.DefaultModifyingManagerContext.LabelId,
             Name = ModifiedManagerName
         };
-        
-        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
+
+        var result = await _sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
 
         Assert.True(result.IsFailure);
     }
@@ -238,15 +209,14 @@ public class ManagerServiceTests
     [Fact]
     public async Task Modify_ShouldReturnFailureWhenManagerContextIdDoesNotMatch()
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
             Id = ModifiedManagerId,
             LabelId = ManagerContexts.DefaultModifyingManagerContext.LabelId,
             Name = ModifiedManagerName
         };
-        
-        var result = await sut.Modify(ManagerContexts.DifferentLabelManagerContext, manager);
+
+        var result = await _sut.Modify(ManagerContexts.DifferentLabelManagerContext, manager);
 
         Assert.True(result.IsFailure);
     }
@@ -255,15 +225,14 @@ public class ManagerServiceTests
     [Fact]
     public async Task Modify_ShouldReturnModifiedManager()
     {
-        var sut = new ManagerService(_context, _labelService);
         var manager = new Manager
         {
             Id = ModifiedManagerId,
             LabelId = ManagerContexts.DefaultModifyingManagerContext.LabelId,
             Name = ModifiedManagerName
         };
-        
-        var result = await sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
+
+        var result = await _sut.Modify(ManagerContexts.DefaultModifyingManagerContext, manager);
 
         Assert.True(result.IsSuccess);
         Assert.Equal(ModifiedManagerName, result.Value.Name);
@@ -311,6 +280,5 @@ public class ManagerServiceTests
         }
     };
 
-    private readonly Context _context;
-    private readonly ILabelService _labelService;
+    private readonly ManagerService _sut;
 }
