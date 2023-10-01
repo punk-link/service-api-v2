@@ -1,4 +1,3 @@
-using Api.Utils.HelthChecks;
 using Core.Data;
 using Core.Extensions;
 using Core.Utils;
@@ -8,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SpotifyDataExtractor.Extensions;
 using System.Diagnostics;
+using Api.Utils.HealthChecks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -132,24 +132,23 @@ static Action<IApplicationBuilder> ConfigureExceptionHandler(WebApplication app)
     => handler => handler.Run(async context =>
     {
         var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
+        if (exceptionHandlerPathFeature?.Error is null)
+            return;
 
-        if (exceptionHandlerPathFeature?.Error is not null)
+        var details = new ProblemDetails
         {
-            var details = new ProblemDetails
-            {
-                Detail = exceptionHandlerPathFeature?.Error.Message,
-                Instance = exceptionHandlerPathFeature!.Endpoint?.ToString(),
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "Internal Server Error",
-                Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
-            };
+            Detail = exceptionHandlerPathFeature.Error.Message,
+            Instance = exceptionHandlerPathFeature.Endpoint?.ToString(),
+            Status = StatusCodes.Status500InternalServerError,
+            Title = "Internal Server Error",
+            Type = "https://datatracker.ietf.org/doc/html/rfc7231#section-6.6.1"
+        };
 
-            details.Extensions.Add("trace-id", Activity.Current?.Id);
+        details.Extensions.Add("trace-id", Activity.Current?.Id);
 
-            if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
-                details.Extensions.Add("stack-trace", exceptionHandlerPathFeature!.Error!.StackTrace?.ToString());
+        if (app.Environment.IsDevelopment() || app.Environment.IsLocal())
+            details.Extensions.Add("stack-trace", exceptionHandlerPathFeature.Error.StackTrace);
 
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            await context.Response.WriteAsJsonAsync(details);
-        }
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        await context.Response.WriteAsJsonAsync(details);
     });

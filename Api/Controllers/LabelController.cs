@@ -16,7 +16,7 @@ public class LabelController : BaseController
 
 
     /// <summary>
-    /// Gets a lable.
+    /// Gets a label.
     /// </summary>
     /// <param name="id">Label ID</param>
     /// <returns></returns>
@@ -30,7 +30,7 @@ public class LabelController : BaseController
 
 
     /// <summary>
-    /// Modifies a lable.
+    /// Modifies a label.
     /// </summary>
     /// <param name="id">Label ID</param>
     /// <param name="label">Modified entity</param>

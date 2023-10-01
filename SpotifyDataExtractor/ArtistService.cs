@@ -11,15 +11,16 @@ public class ArtistService : IArtistService
     }
 
 
-    public async Task<List<Artist>> Get(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+    public async Task<List<Artist>> Get(IEnumerable<string>? ids, CancellationToken cancellationToken = default)
     {
-        if (ids is null || !ids.Any())
+        var idList = ids is null ? Enumerable.Empty<string>().ToList() : ids.ToList();
+        if (!idList.Any())
             return Enumerable.Empty<Artist>().ToList();
 
-        var urls = ids.Chunk(ArtistQueryLimit)
+        var urls = idList.Chunk(ArtistQueryLimit)
             .Select(chunk => {
-                var concatinatedIds = string.Join(',', chunk);
-                return $"artists?ids={concatinatedIds}";
+                var concatenatedIds = string.Join(',', chunk);
+                return $"artists?ids={concatenatedIds}";
             });
 
         return await _spotifyClient.Get<Artist>(urls, cancellationToken);

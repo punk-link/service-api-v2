@@ -4,7 +4,7 @@ namespace Core.Converters.Releases;
 
 internal static class DbReleaseConverter
 {
-    public static Models.Releases.Release ToRelease(this Data.Releases.Release release)
+    public static Release ToRelease(this Data.Releases.Release release)
         => new()
         {
             Id = release.Id,
@@ -15,7 +15,7 @@ internal static class DbReleaseConverter
         };
 
 
-    public static Models.Releases.SlimRelease ToSlimRelease(this Data.Releases.Release release)
+    public static SlimRelease ToSlimRelease(this Data.Releases.Release release)
         => new()
         {
             Id = release.Id,

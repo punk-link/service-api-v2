@@ -64,25 +64,25 @@ public sealed class ArtistService : IArtistService
                 if (spotifyArtist == default)
                     return Result.Failure<string>("Can't load artist metadata from Spotify.");
 
-                var dbArtist = spotifyArtist.ToDbArtist(managerContext.LabelId, now);
-                await _context.Artists.AddAsync(dbArtist, cancellationToken);
+                var addedDbArtist = spotifyArtist.ToDbArtist(managerContext.LabelId, now);
+                await _context.Artists.AddAsync(addedDbArtist, cancellationToken);
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                return dbArtist.SpotifyId;
+                return addedDbArtist.SpotifyId;
             }
 
 
-            async Task<Result<string>> UpdateArtist(Data.Artists.Artist dbArtist)
+            async Task<Result<string>> UpdateArtist(Data.Artists.Artist updatedDbArtist)
             {
-                dbArtist.LabelId = managerContext.LabelId;
-                dbArtist.Updated = now;
+                updatedDbArtist.LabelId = managerContext.LabelId;
+                updatedDbArtist.Updated = now;
 
-                _context.Update(dbArtist);
+                _context.Update(updatedDbArtist);
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                return dbArtist.SpotifyId;
+                return updatedDbArtist.SpotifyId;
             }
         }
 

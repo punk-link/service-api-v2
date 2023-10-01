@@ -69,7 +69,7 @@ public sealed class ReleaseService : IReleaseService
                 {
                     if (!artistDict.TryGetValue(artist.Id, out var featuringArtist))
                     {
-                        _logger.LogSpotifyArtistIdWasntFound(artist.Id);
+                        _logger.LogSpotifyArtistIdWasNotFound(artist.Id);
                         continue;
                     }
 
@@ -96,7 +96,7 @@ public sealed class ReleaseService : IReleaseService
             {
                 if (!releaseDict.TryGetValue(release.Id, out var dbRelease))
                 {
-                    _logger.LogSpotifyReleaseIdWasntFound(release.Id);
+                    _logger.LogSpotifyReleaseIdWasNotFound(release.Id);
                     return;
                 }
 
@@ -107,7 +107,7 @@ public sealed class ReleaseService : IReleaseService
                     {
                         if (!container.ArtistDict.TryGetValue(artist.Id, out var featuringArtist))
                         {
-                            _logger.LogSpotifyArtistIdWasntFound(artist.Id);
+                            _logger.LogSpotifyArtistIdWasNotFound(artist.Id);
                             continue;
                         }
 

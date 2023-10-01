@@ -30,7 +30,7 @@ public class ManagerController : BaseController
 
 
     /// <summary>
-    /// Creates a new lable and adds a master manager to it.
+    /// Creates a new label and adds a master manager to it.
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -43,7 +43,7 @@ public class ManagerController : BaseController
 
 
     /// <summary>
-    /// Gets all managers for a lable.
+    /// Gets all managers for a label.
     /// </summary>
     /// <returns></returns>
     [HttpGet]

@@ -25,18 +25,17 @@ public class ConsulConfigurationProvider : ConfigurationProvider
         if (jsonNode is null)
             return;
 
-        foreach (var node in jsonNode.AsObject().AsEnumerable())
+        foreach (var (nodeKey, value) in jsonNode.AsObject().AsEnumerable())
         {
-            var nodeKey = node.Key;
-            switch (node.Value)
+            switch (value)
             {
                 case JsonValue:
-                    Data.Add(nodeKey, node.Value.ToString());
+                    Data.Add(nodeKey, value.ToString());
                     continue;
                 case JsonArray:
                     throw new NotImplementedException();
                 case JsonObject: 
-                    foreach (var prop in  node.Value.AsObject().AsEnumerable())
+                    foreach (var prop in  value.AsObject().AsEnumerable())
                     { 
                         if (prop.Value is null)
                             continue;

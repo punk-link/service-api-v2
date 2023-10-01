@@ -1,6 +1,4 @@
-﻿using Core.Models;
-
-namespace Core.Converters.Spotify;
+﻿namespace Core.Converters.Spotify;
 
 internal static class ImageDetailsConverter
 {

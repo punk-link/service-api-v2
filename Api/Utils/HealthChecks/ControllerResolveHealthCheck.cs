@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Api.Utils.HelthChecks;
+namespace Api.Utils.HealthChecks;
 
 public class ControllerResolveHealthCheck : IHealthCheck
 {
@@ -19,7 +19,7 @@ public class ControllerResolveHealthCheck : IHealthCheck
         try
         {
             foreach (var controllerType in ControllerTypes)
-            _provider.GetRequiredService(controllerType);
+                _provider.GetRequiredService(controllerType);
 
             _areControllersResolved = true;
 
@@ -35,7 +35,7 @@ public class ControllerResolveHealthCheck : IHealthCheck
     private static readonly Type[] ControllerTypes = typeof(ControllerResolveHealthCheck).Assembly
         .GetTypes()
         .Where(t => Attribute.GetCustomAttribute(t, typeof(ApiControllerAttribute)) is not null)
-        .Where(t=> !t.IsAbstract && t.IsPublic)
+        .Where(t=> t is { IsAbstract: false, IsPublic: true })
         .ToArray();
 
 

@@ -14,10 +14,10 @@ internal static class DbLabelConverter
         };
 
 
-    public static Models.Labels.Label ToLabel(this Label dblabel) 
+    public static Models.Labels.Label ToLabel(this Label dbLabel) 
         => new()
         {
-            Id = dblabel.Id,
-            Name = dblabel.Name
+            Id = dbLabel.Id,
+            Name = dbLabel.Name
         };
 }

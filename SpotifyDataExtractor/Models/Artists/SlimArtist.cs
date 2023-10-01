@@ -6,7 +6,7 @@ namespace SpotifyDataExtractor.Models.Artists;
 public readonly record struct SlimArtist
 {
     [JsonConstructor]
-    public SlimArtist(string id, List<ImageDetails> imageDetails, string name)
+    public SlimArtist(string id, List<ImageDetails>? imageDetails, string name)
     {
         Id = id;
         ImageDetails = imageDetails ?? Enumerable.Empty<ImageDetails>().ToList();

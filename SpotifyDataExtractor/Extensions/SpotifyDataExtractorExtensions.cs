@@ -23,7 +23,7 @@ public static class SpotifyDataExtractorExtensions
     }
 
 
-    private static IServiceCollection AddHttpClients(this IServiceCollection services, Action<SpotifyConfig> options)
+    private static void AddHttpClients(this IServiceCollection services, Action<SpotifyConfig> options)
     {
         var config = GetConfig(options);
 
@@ -44,8 +44,8 @@ public static class SpotifyDataExtractorExtensions
             httpClient.DefaultRequestHeaders.Add(HttpRequestHeader.Accept.ToString(), "application/json");
             httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }).AddPollyPolicyHandlers();
-
-        return services;
+        
+        return;
 
 
         static SpotifyConfig GetConfig(Action<SpotifyConfig> opts)
@@ -61,7 +61,7 @@ public static class SpotifyDataExtractorExtensions
     }
 
 
-    private static IHttpClientBuilder AddPollyPolicyHandlers(this IHttpClientBuilder builder)
+    private static void AddPollyPolicyHandlers(this IHttpClientBuilder builder)
         => builder.SetHandlerLifetime(TimeSpan.FromMilliseconds(300_000))
             .AddTransientHttpErrorPolicy(policyBuilder =>
                 policyBuilder.WaitAndRetryAsync(Backoff.DecorrelatedJitterBackoffV2(medianFirstRetryDelay: TimeSpan.FromMilliseconds(500), retryCount: 5))

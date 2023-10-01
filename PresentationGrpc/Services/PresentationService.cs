@@ -4,10 +4,9 @@ namespace PresentationGrpc.Services;
 
 public class PresentationService : Presentation.PresentationBase
 {
-    public PresentationService(ILogger<PresentationService> logger, IArtistPresentationService artistPresentationService)
+    public PresentationService(IArtistPresentationService artistPresentationService)
     {
         _artistPresentationService = artistPresentationService;
-        _logger = logger;
     }
 
 
@@ -24,5 +23,4 @@ public class PresentationService : Presentation.PresentationBase
 
 
     private readonly IArtistPresentationService _artistPresentationService;
-    private readonly ILogger<PresentationService> _logger;
 }

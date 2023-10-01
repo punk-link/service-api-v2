@@ -10,15 +10,16 @@ public class ReleaseService : IReleaseService
     }
 
 
-    public async Task<List<Release>> Get(IEnumerable<string> ids, CancellationToken cancellationToken = default)
+    public async Task<List<Release>> Get(IEnumerable<string>? ids, CancellationToken cancellationToken = default)
     {
-        if (ids is null || !ids.Any())
+        var idList = ids is null ? Enumerable.Empty<string>().ToList() : ids.ToList();
+        if (!idList.Any())
             return Enumerable.Empty<Release>().ToList();
 
-        var urls = ids.Chunk(ReleaseQueryLimit)
+        var urls = idList.Chunk(ReleaseQueryLimit)
             .Select(chunk => {
-                var concatinatedIds = string.Join(',', chunk);
-                return $"albums?ids={concatinatedIds}";
+                var concatenatedIds = string.Join(',', chunk);
+                return $"albums?ids={concatenatedIds}";
             });
 
         return await _spotifyClient.Get<Release>(urls, cancellationToken);
