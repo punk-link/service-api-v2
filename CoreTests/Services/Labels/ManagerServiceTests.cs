@@ -4,16 +4,16 @@ using Core.Services.Labels;
 using Core.Utils.Time;
 using CoreTests.Shared;
 
-namespace CoreTests.Services.Artists;
+namespace CoreTests.Services.Labels;
 
 public class ManagerServiceTests
 {
     public ManagerServiceTests()
     {
-        var managerMock = _managers.BuildMock().BuildMockDbSet();
+        var managersMock = _managers.BuildMock().BuildMockDbSet();
 
         var contextMock = Substitute.For<Context>();
-        contextMock.Managers.Returns(managerMock);
+        contextMock.Managers.Returns(managersMock);
 
         contextMock.Managers
             .When(x => x.AddAsync(Arg.Any<Core.Data.Labels.Manager>(), Arg.Any<CancellationToken>()))
@@ -131,20 +131,20 @@ public class ManagerServiceTests
 
 
     [Fact]
-    public async Task Get_ShouldReturnDefaultManagerWhenIdDoesNotMatch()
+    public async Task Get_ShouldReturnNoneManagerWhenIdDoesNotMatch()
     {
         var result = await _sut.Get(ManagerContexts.DefaultAddingManagerContext, 0);
 
-        Assert.Equal(default, result);
+        Assert.True(result.HasNoValue);
     }
 
 
     [Fact]
-    public async Task Get_ShouldReturnDefaultManagerWhenManagerContextIdDoesNotMatch()
+    public async Task Get_ShouldReturnNoneManagerWhenManagerContextIdDoesNotMatch()
     {
         var result = await _sut.Get(ManagerContexts.DifferentLabelManagerContext, AddedManagerId);
 
-        Assert.Equal(default, result);
+        Assert.True(result.HasNoValue);
     }
 
 
@@ -153,7 +153,8 @@ public class ManagerServiceTests
     {
         var result = await _sut.Get(ManagerContexts.DefaultAddingManagerContext, AddedManagerId);
 
-        Assert.Equal(AddedManagerId, result.Id);
+        Assert.True(result.HasValue);
+        Assert.Equal(AddedManagerId, result.Value.Id);
     }
 
 

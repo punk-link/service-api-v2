@@ -26,7 +26,7 @@ public sealed class ReleaseService : IReleaseService
     {
         return await Result.Success()
             .Bind(GetSpotifyArtistIds)
-            .Bind(GetArtists)
+            .Bind(GetDbArtists)
             .Bind(AddReleases)
             .Bind(AddTracks);
 
@@ -51,7 +51,7 @@ public sealed class ReleaseService : IReleaseService
         }
 
 
-        async Task<Result<Dictionary<string, Data.Artists.Artist>>> GetArtists(List<string> spotifyArtistIds)
+        async Task<Result<Dictionary<string, Data.Artists.Artist>>> GetDbArtists(List<string> spotifyArtistIds)
             => await _context.Artists
                 .Where(x => spotifyArtistIds.Contains(x.SpotifyId))
                 .Select(x => x.ToIdOnlyDbArtist())
@@ -59,7 +59,7 @@ public sealed class ReleaseService : IReleaseService
 
 
         async Task<Result<(Dictionary<string, Data.Artists.Artist>, List<Data.Releases.Release>)>> AddReleases(
-            Dictionary<string, Data.Artists.Artist> artistDict)
+            Dictionary<string, Data.Artists.Artist> dbArtistDict)
         {
             var dbReleases = new ConcurrentBag<Data.Releases.Release>();
             Parallel.ForEach(releases, release =>
@@ -67,7 +67,7 @@ public sealed class ReleaseService : IReleaseService
                 var releaseArtists = new List<Data.Artists.Artist>(release.Artists.Count);
                 foreach (var artist in release.Artists)
                 {
-                    if (!artistDict.TryGetValue(artist.Id, out var featuringArtist))
+                    if (!dbArtistDict.TryGetValue(artist.Id, out var featuringArtist))
                     {
                         _logger.LogSpotifyArtistIdWasNotFound(artist.Id);
                         continue;
@@ -83,7 +83,7 @@ public sealed class ReleaseService : IReleaseService
             await _context.Releases.AddRangeAsync(dbReleases, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return (artistDict, dbReleases.ToList());
+            return (dbArtistDict, dbReleases.ToList());
         }
 
 
@@ -127,7 +127,8 @@ public sealed class ReleaseService : IReleaseService
 
 
     public async Task<int> Count(CancellationToken cancellationToken = default)
-        => await _context.Releases.CountAsync(cancellationToken);
+        => await _context.Releases
+            .CountAsync(cancellationToken);
 
 
     public async Task<Maybe<Release>> Get(int id, CancellationToken cancellationToken = default)
@@ -137,10 +138,7 @@ public sealed class ReleaseService : IReleaseService
             .Select(x => x.ToRelease())
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (release is null)
-            return Maybe.None;
-
-        return release;
+        return release is null ? Maybe.None : release;
     }
 
 
@@ -154,7 +152,7 @@ public sealed class ReleaseService : IReleaseService
     public async Task<List<UpcContainer>> GetUpcContainersToUpdate(DateTime updateThreshold, int skip, int top = 40,
         CancellationToken cancellationToken = default)
         => await _context.Releases
-            .Where(x => updateThreshold < x.Updated)
+            .Where(x => x.Updated <= updateThreshold)
             .OrderBy(x => x.Id)
             .Skip(skip)
             .Take(top)

@@ -54,10 +54,10 @@ public class ManagerService : IManagerService
             .ToListAsync(cancellationToken);
 
 
-    public async Task<Manager> Get(ManagerContext currentManager, int managerId, CancellationToken cancellationToken = default)
+    public async Task<Maybe<Manager>> Get(ManagerContext currentManager, int managerId, CancellationToken cancellationToken = default)
     {
         var manager = await GetInternal(managerId, cancellationToken);
-        return manager.LabelId == currentManager.LabelId ? manager : default;
+        return manager.LabelId == currentManager.LabelId ? manager : Maybe<Manager>.None;
     }
 
 

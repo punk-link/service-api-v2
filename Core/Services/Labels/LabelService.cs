@@ -41,10 +41,10 @@ public class LabelService : ILabelService
     }
 
 
-    public async Task<Label> Get(ManagerContext currentManager, int id, CancellationToken cancellationToken = default)
+    public async Task<Maybe<Label>> Get(ManagerContext currentManager, int id, CancellationToken cancellationToken = default)
     {
         var label = await GetInternal(id, cancellationToken);
-        return label.Id == currentManager.LabelId ? label : default;
+        return label.Id == currentManager.LabelId ? label : Maybe<Label>.None;
     }
 
 

@@ -4,7 +4,7 @@ using Core.Services.Labels;
 using Core.Utils.Time;
 using CoreTests.Shared;
 
-namespace CoreTests.Services.Artists;
+namespace CoreTests.Services.Labels;
 
 public class LabelServiceTest
 {
@@ -62,11 +62,11 @@ public class LabelServiceTest
 
 
     [Fact]
-    public async Task Get_ShouldReturnDefaultWhenManagerLabelIsNotMatch()
+    public async Task Get_ShouldReturnNoneWhenManagerLabelIsNotMatch()
     {
         var result = await _sut.Get(ManagerContexts.DifferentLabelManagerContext, AddedLabelId);
 
-        Assert.Equal(default, result);
+        Assert.True(result.HasNoValue);
     }
 
 
@@ -75,8 +75,8 @@ public class LabelServiceTest
     {
         var result = await _sut.Get(ManagerContexts.DefaultAddingManagerContext, AddedLabelId);
 
-        Assert.NotEqual(default, result);
-        Assert.Equal(AddedLabelId, result.Id);
+        Assert.True(result.HasValue);
+        Assert.Equal(AddedLabelId, result.Value.Id);
     }
 
 
