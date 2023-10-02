@@ -8,6 +8,7 @@ using Core.Models.Labels.Validators;
 using Core.Services.Releases;
 using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using Artist = Core.Models.Artists.Artist;
@@ -17,10 +18,13 @@ namespace Core.Services.Artists;
 public sealed class ArtistService : IArtistService
 {
     public ArtistService(Context context, 
+        ILoggerFactory loggerFactory, 
         IReleaseService releaseService,
         SpotifyDataExtractor.IArtistService spotifyArtistService, 
         SpotifyDataExtractor.IReleaseService spotifyReleaseService)
     {
+        _logger = loggerFactory.CreateLogger<ArtistService>();
+
         _context = context;
         _releaseService = releaseService;
         _spotifyArtistService = spotifyArtistService;
@@ -114,7 +118,6 @@ public sealed class ArtistService : IArtistService
 
                 async Task<Result<List<string>>> GetMissingSpotifyReleaseIds(List<string> spotifyReleaseIds)
                 {
-                    // TODO: check for failures and replace the error message
                     var spotifyReleases = await _spotifyReleaseService.Get(spotifyArtistId, cancellationToken);
 
                     var presentIds = spotifyReleaseIds.ToHashSet();
@@ -130,7 +133,6 @@ public sealed class ArtistService : IArtistService
 
 
                 async Task<Result<List<SpotifyDataExtractor.Models.Releases.Release>>> GetSpotifyReleases(List<string> spotifyReleaseIds) 
-                    // TODO: check for failures and replace the error message
                     => await _spotifyReleaseService.Get(spotifyReleaseIds, cancellationToken);
             }
 
@@ -180,7 +182,6 @@ public sealed class ArtistService : IArtistService
 
 
                 async Task<Result<List<SpotifyDataExtractor.Models.Artists.Artist>>> GetMissingFeaturingArtists(List<string> spotifyArtistIds)
-                    // TODO: check for failures and replace the error message
                     => await _spotifyArtistService.Get(spotifyArtistIds, cancellationToken);
 
 
@@ -206,34 +207,49 @@ public sealed class ArtistService : IArtistService
         }
 
 
-        async Task<Result<Artist>> GetArtist(string spotifyArtistId) 
-            => await GetInternal(spotifyArtistId, cancellationToken);
+        async Task<Result<Artist>> GetArtist(string spotifyArtistId)
+        {
+            var artist = await GetInternal(spotifyArtistId, cancellationToken);
+            if (artist != default)
+                return artist;
+
+            _logger.LogInformation(spotifyArtistId);
+            return Result.Failure<Artist>("Can't add the artist.");
+
+        }
     }
 
 
-    public Task<Result<Artist>> Get(int artistId, CancellationToken cancellationToken = default)
-        // TODO: add manager check
-        => GetInternal(artistId, cancellationToken);
+    public async Task<Maybe<Artist>> Get(int artistId, CancellationToken cancellationToken = default)
+    {
+        var artist = await GetInternal(artistId, cancellationToken);
+        return artist == default ? Maybe<Artist>.None : artist;
+    }
 
 
-    public async Task<Result<List<Artist>>> GetByLabel(int labelId, CancellationToken cancellationToken = default) 
+    public async Task<List<Artist>> GetByLabel(int labelId, CancellationToken cancellationToken = default) 
         => await QueryArtists(x => x.LabelId == labelId)
             .ToListAsync(cancellationToken);
 
 
-    public async Task<SlimArtist> GetSlim(int artistId, CancellationToken cancellationToken = default)
-        => (await _context.Artists
+    public async Task<Maybe<SlimArtist>> GetSlim(int artistId, CancellationToken cancellationToken = default)
+    {
+        var result = await _context.Artists
             .Where(x => x.Id == artistId)
             .Select(x => x.ToSlimArtist())
-            .FirstOrDefaultAsync(cancellationToken))!;
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return result ?? Maybe<SlimArtist>.None;
+    }
 
 
     public async Task<List<ArtistSearchResult>> Search(string query, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(query) || query.Length < 3)
+        var trimmedQuery = string.IsNullOrWhiteSpace(query) ? string.Empty : query.Trim();
+        if (trimmedQuery.Length < 3)
             return Enumerable.Empty<ArtistSearchResult>().ToList();
 
-        var results = await _spotifyArtistService.Search(query, cancellationToken);
+        var results = await _spotifyArtistService.Search(trimmedQuery, cancellationToken);
         return results.Select(x => new ArtistSearchResult
             {
                 ImageDetails = x.ImageDetails.ToImageDetails(),
@@ -243,12 +259,12 @@ public sealed class ArtistService : IArtistService
     }
 
 
-    private async Task<Result<Artist>> GetInternal(int artistId, CancellationToken cancellationToken)
+    private async Task<Artist> GetInternal(int artistId, CancellationToken cancellationToken)
         => await QueryArtists(x => x.Id == artistId)
             .FirstOrDefaultAsync(cancellationToken);
 
 
-    private async Task<Result<Artist>> GetInternal(string spotifyArtistId, CancellationToken cancellationToken)
+    private async Task<Artist> GetInternal(string spotifyArtistId, CancellationToken cancellationToken)
         => await QueryArtists(x => x.SpotifyId == spotifyArtistId)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -260,6 +276,7 @@ public sealed class ArtistService : IArtistService
 
 
     private readonly Context _context;
+    private readonly ILogger _logger;
     private readonly IReleaseService _releaseService;
     private readonly SpotifyDataExtractor.IArtistService _spotifyArtistService;
     private readonly SpotifyDataExtractor.IReleaseService _spotifyReleaseService;

@@ -6,6 +6,8 @@ public class EmptyStringTestData : IEnumerable<object[]>
 {
     public IEnumerator<object[]> GetEnumerator()
     {
+        yield return new object[] { " " };
+        yield return new object[] { "\r\n" };
         yield return new object[] { "\n" };
         yield return new object[] { string.Empty };
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.

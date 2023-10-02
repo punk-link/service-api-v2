@@ -138,7 +138,7 @@ public sealed class ReleaseService : IReleaseService
             .Select(x => x.ToRelease())
             .FirstOrDefaultAsync(cancellationToken);
 
-        return release is null ? Maybe.None : release;
+        return release ?? Maybe<Release>.None;
     }
 
 

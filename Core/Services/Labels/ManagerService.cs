@@ -85,10 +85,7 @@ public class ManagerService : IManagerService
                 .Where(x => x.Id == manager.Id)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (dbManager is null)
-                return Maybe.None;
-
-            return dbManager;
+            return dbManager ?? Maybe<Data.Labels.Manager>.None;
         }
 
 
