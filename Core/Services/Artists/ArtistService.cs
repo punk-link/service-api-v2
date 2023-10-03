@@ -1,6 +1,7 @@
 ﻿using Core.Converters.Artists;
 using Core.Converters.Spotify;
 using Core.Data;
+using Core.Data.Artists.Validators;
 using Core.Extensions;
 using Core.Models.Artists;
 using Core.Models.Labels;
@@ -39,7 +40,7 @@ public sealed class ArtistService : IArtistService
         return await Result.Success()
             .Ensure(() => !string.IsNullOrWhiteSpace(spotifyId), "Artist's spotify ID is empty.")
             .Bind(GetExistingArtist)
-            .Bind(AddOrUpdateArtist)
+            .Bind(AddOrLinkArtist)
             .Bind(AddMissingReleases)
             .Bind(GetArtist);
 
@@ -49,17 +50,16 @@ public sealed class ArtistService : IArtistService
                 .FirstOrDefaultAsync(x => x.SpotifyId == spotifyId, cancellationToken);
 
 
-        async Task<Result<string>> AddOrUpdateArtist(Data.Artists.Artist? dbArtist)
+        async Task<Result<string>> AddOrLinkArtist(Data.Artists.Artist? dbArtist)
         {
             if (dbArtist is null)
                 return await AddArtist();
 
-            var validator = new ManagerContextValidator();
-            var validationResult = validator.ValidateArtistBelongsToLabel(managerContext, dbArtist.LabelId);
-            if (!validationResult.IsValid && dbArtist.Id != default)
+            var validationResult = DbArtistValidator.ValidateDoesNotBelongsToLabel(dbArtist);
+            if (!validationResult.IsValid)
                 return Result.Failure<string>(validationResult.ToCombinedMessage());
 
-            return await UpdateArtist(dbArtist);
+            return await LinkArtist(dbArtist);
 
 
             async Task<Result<string>> AddArtist()
@@ -77,7 +77,7 @@ public sealed class ArtistService : IArtistService
             }
 
 
-            async Task<Result<string>> UpdateArtist(Data.Artists.Artist updatedDbArtist)
+            async Task<Result<string>> LinkArtist(Data.Artists.Artist updatedDbArtist)
             {
                 updatedDbArtist.LabelId = managerContext.LabelId;
                 updatedDbArtist.Updated = now;

@@ -25,8 +25,4 @@
     <ProjectReference Include="..\SpotifyDataExtractor\SpotifyDataExtractor.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\Artists\Validators\" />
-  </ItemGroup>
-
 </Project>

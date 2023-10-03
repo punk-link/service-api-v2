@@ -20,6 +20,8 @@ public class ArtistServiceTests
         contextMock.Artists.Returns(artistsMock);
         contextMock.Releases.Returns(releasesMock);
 
+        //contextMock.Artists.FirstOrDefault()
+
         contextMock.Artists
             .When(x => x.AddAsync(Arg.Any<Artist>(), Arg.Any<CancellationToken>()))
             .Do(parameters =>
@@ -28,7 +30,7 @@ public class ArtistServiceTests
                 if (artist.SpotifyId != AddingArtistSpotifyId)
                     return;
 
-                var dbArtist = _artists.First(x => x.SpotifyId == AddingArtistSpotifyId);
+                var dbArtist = _artists.First(x => x.Id == AddingArtistId);
                 dbArtist.SpotifyId = artist.SpotifyId;
             });
 
@@ -109,6 +111,24 @@ public class ArtistServiceTests
 
 
     [Fact]
+    public async Task Add_ShouldReturnFailureWhenArtistLinkedToAnotherLabel()
+    {
+        var result = await _sut.Add(ManagerContexts.DefaultAddingManagerContext, AddingUnlinkedArtistSpotifyId);
+
+        Assert.True(result.IsFailure);
+    }
+
+
+    [Fact]
+    public async Task Add_ShouldLinkUnlinkedArtist()
+    {
+        var result = await _sut.Add(ManagerContexts.DefaultAddingManagerContext, AddingLinkedArtistSpotifyId);
+
+        Assert.True(result.IsSuccess);
+    }
+
+
+    [Fact]
     public async Task Get_ShouldReturnNoneWhenIdDoesNotFound()
     {
         var result = await _sut.Get(0);
@@ -130,7 +150,7 @@ public class ArtistServiceTests
     [Fact]
     public async Task GetByLabel_ShouldReturnNoneWhenLabelIdDoesNotFound()
     {
-        var results = await _sut.GetByLabel(0);
+        var results = await _sut.GetByLabel(35);
 
         Assert.Empty(results);
     }
@@ -219,6 +239,12 @@ public class ArtistServiceTests
     private const string ExistingArtistName = "My Artist";
     private const int NonExistingArtistId = 2;
     private const int NonExistingArtistLabelId = 2;
+    private const int AddingLinkedArtistId = 6;
+    private const string AddingLinkedArtistName = "My Linked Artist";
+    private const string AddingLinkedArtistSpotifyId = "linked-spotify-id";
+    private const int AddingUnlinkedArtistId = 5;
+    private const string AddingUnlinkedArtistName = "My Unlinked Artist";
+    private const string AddingUnlinkedArtistSpotifyId = "unlinked-spotify-id";
 
 
     private readonly List<SpotifyDataExtractor.Models.Artists.SlimArtist> _artistSearchResults = new()
@@ -273,15 +299,29 @@ public class ArtistServiceTests
             Id = AddingArtistId,
             ImageDetails = Enumerable.Empty<ImageDetails>().ToList(),
             LabelId = ExistingArtistLabelId,
-            Name = AddingArtistName,
-            SpotifyId = AddingArtistSpotifyId
+            Name = AddingArtistName
         },
         new()
         {
             Id = NonAddingArtistId,
             ImageDetails = Enumerable.Empty<ImageDetails>().ToList(),
             LabelId = ExistingArtistLabelId,
-            Name = NonAddingArtistName,
+            Name = NonAddingArtistName
+        },
+        new()
+        {
+            Id = AddingUnlinkedArtistId,
+            ImageDetails = Enumerable.Empty<ImageDetails>().ToList(),
+            LabelId = ExistingArtistLabelId,
+            Name = AddingUnlinkedArtistName
+        },
+        new()
+        {
+            Id = AddingLinkedArtistId,
+            ImageDetails = Enumerable.Empty<ImageDetails>().ToList(),
+            LabelId = default,
+            Name = AddingLinkedArtistName,
+            SpotifyId = AddingLinkedArtistSpotifyId
         }
     };
 
