@@ -30,7 +30,7 @@ public sealed class ArtistController : BaseController
     [ProducesResponseType(typeof(Artist), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromRoute][Required][Range(1, int.MaxValue)] int artistId, CancellationToken cancellationToken = default)
     {
-        return OkOrNotFoundOrBadRequest(await _artistService.Get(artistId, cancellationToken));
+        return OkOrNotFound(await _artistService.Get(artistId, cancellationToken));
     }
 
 

@@ -31,7 +31,8 @@ public class ArtistPresentationService : IArtistPresentationService
 
         var slimReleases = new List<Core.Models.Releases.SlimRelease>(); // await _releaseService.GetSlim(id);
 
-        return ArtistConverters.Convert(slimArtist, presentationConfig, releaseStats, socialNetworks, slimReleases);
+        // TODO: add maybe handling
+        return ArtistConverters.Convert(slimArtist.Value, presentationConfig, releaseStats, socialNetworks, slimReleases);
     }
 
 
