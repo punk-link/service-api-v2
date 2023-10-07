@@ -32,8 +32,6 @@ public class ConsulConfigurationProvider : ConfigurationProvider
                 case JsonValue:
                     Data.Add(nodeKey, value.ToString());
                     continue;
-                case JsonArray:
-                    throw new NotImplementedException();
                 case JsonObject: 
                     foreach (var prop in  value.AsObject().AsEnumerable())
                     { 
@@ -43,6 +41,8 @@ public class ConsulConfigurationProvider : ConfigurationProvider
                         Data.Add($"{nodeKey}:{prop.Key}", prop.Value.ToString());
                     }
                     continue;
+                case JsonArray:
+                    throw new NotImplementedException();
             }
         }
     }

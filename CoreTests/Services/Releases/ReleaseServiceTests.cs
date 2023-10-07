@@ -1,5 +1,4 @@
 ﻿using Core.Data;
-using Core.Data.Artists;
 using Core.Data.Common;
 using Core.Services.Releases;
 using Microsoft.Extensions.Logging;
@@ -10,9 +9,11 @@ public class ReleaseServiceTests
 {
     public ReleaseServiceTests()
     {
+        var artistsMock = Artists.BuildMock().BuildMockDbSet();
         var releasesMock = _releases.BuildMock().BuildMockDbSet();
 
         var contextMock = Substitute.For<Context>();
+        contextMock.Artists.Returns(artistsMock);
         contextMock.Releases.Returns(releasesMock);
 
         var loggerFactoryMock = Substitute.For<ILoggerFactory>();
@@ -21,13 +22,13 @@ public class ReleaseServiceTests
     }
 
 
-    /*[Fact]
-    public async Task Add_Should()
+    [Fact]
+    public async Task Add_ShouldReturnResult()
     {
-        var result = await _sut.Add(new List<Release>(), DateTime.Now);
+        var result = await _sut.Add(new List<SpotifyDataExtractor.Models.Releases.Release>(), DateTime.Now);
 
-        Assert.True(false, "This test needs an implementation");
-    }*/
+        Assert.True(result.IsSuccess);
+    }
 
 
     [Fact]

@@ -24,11 +24,11 @@ internal static class ReleaseConverter
 
 
     public static List<Release> ToDbReleases(this IEnumerable<SpotifyDataExtractor.Models.Releases.Release> releases, 
-        List<Data.Artists.Artist> releaseArtists, 
-        in DateTime timeStamp = default)
+        List<Data.Artists.Artist> releaseArtists, in DateTime timeStamp = default)
     {
-        var results = new List<Release>(releases.Count());
-        foreach (var release in releases)
+        var releaseArray = releases as SpotifyDataExtractor.Models.Releases.Release[] ?? releases.ToArray();
+        var results = new List<Release>(releaseArray.Length);
+        foreach (var release in releaseArray)
             results.Add(ToDbRelease(release, releaseArtists, timeStamp));
 
         return results;
