@@ -12,7 +12,7 @@ public class Release
     public List<ImageDetails> ImageDetails { get; set; } = default!;
     public string Label { get; set; } = default!;
     public string Name { get; set; } = default!;
-    public DateTime ReleaseDate { get; set; }
+    public DateOnly ReleaseDate { get; set; }
     public string SpotifyId { get; set; } = default!;
     public int TrackNumber { get; set; }
     public ReleaseType Type { get; set; }

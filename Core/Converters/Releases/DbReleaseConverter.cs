@@ -10,7 +10,7 @@ internal static class DbReleaseConverter
             Id = release.Id,
             ImageDetails = release.ImageDetails.ToImageDetails(),
             Name = release.Name,
-            ReleaseDate = DateOnly.FromDateTime(release.ReleaseDate),
+            ReleaseDate = release.ReleaseDate,
             Type = release.Type,
         };
 
@@ -21,7 +21,7 @@ internal static class DbReleaseConverter
             Id = release.Id,
             ImageDetails = release.ImageDetails.ToImageDetails(),
             Name = release.Name,
-            ReleaseDate = DateOnly.FromDateTime(release.ReleaseDate),
+            ReleaseDate = release.ReleaseDate,
             Type = release.Type,
         };
 

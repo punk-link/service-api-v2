@@ -13,8 +13,7 @@ internal static class ReleaseConverter
             Label = release.Label,
             Name = release.Name,
             ReleaseArtists = releaseArtists,
-            // TODO
-            ReleaseDate = timeStamp, //release.ReleaseDate,
+            ReleaseDate = ReleaseDateConverter.ToDate(release.ReleaseDate),
             SpotifyId = release.Id,
             TrackNumber = release.TrackNumber,
             Tracks = Enumerable.Empty<Track>().ToList(),

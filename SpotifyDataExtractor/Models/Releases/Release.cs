@@ -9,8 +9,7 @@ public readonly record struct Release
 {
     [JsonConstructor]
     public Release(string id, List<SlimArtist> artists, ExternalIdContainer externalIds, ExternalUrlContainer externalUrls, List<string> genres,
-        List<ImageDetails> imageDetails, string label, string name, string releaseDate, string releaseDatePrecision, int trackNumber,
-        TrackContainer tracks, ReleaseType type)
+        List<ImageDetails> imageDetails, string label, string name, string releaseDate, int trackNumber, TrackContainer tracks, ReleaseType type)
     {
         Id = id;
         Artists = artists;
@@ -21,7 +20,6 @@ public readonly record struct Release
         Label = label;
         Name = name;
         ReleaseDate = releaseDate;
-        ReleaseDatePrecision = releaseDatePrecision;
         TrackNumber = trackNumber;
         Tracks = tracks;
         Type = type;
@@ -30,28 +28,37 @@ public readonly record struct Release
 
     [JsonPropertyName("id")]
     public string Id { get; init; }
+
     [JsonPropertyName("artists")]
     public List<SlimArtist> Artists { get; init; }
+
     [JsonPropertyName("external_ids")]
     public ExternalIdContainer ExternalIds { get; init; }
+
     [JsonPropertyName("external_urls")]
     public ExternalUrlContainer ExternalUrls { get; init; }
+
     [JsonPropertyName("genres")]
     public List<string> Genres { get; init; }
+
     [JsonPropertyName("images")]
     public List<ImageDetails> ImageDetails { get; init; }
+
     [JsonPropertyName("label")]
     public string Label { get; init; }
+
     [JsonPropertyName("name")]
     public string Name { get; init; }
+
     [JsonPropertyName("release_date")]
     public string ReleaseDate { get; init; }
-    [JsonPropertyName("release_date_precision")]
-    public string ReleaseDatePrecision { get; init; }
+
     [JsonPropertyName("total_tracks")]
     public int TrackNumber { get; init; }
+
     [JsonPropertyName("tracks")]
     public TrackContainer Tracks { get; init; }
+
     [JsonPropertyName("album_type")]
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public ReleaseType Type { get; init; }
